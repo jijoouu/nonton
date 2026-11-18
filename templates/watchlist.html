@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+
+{% block title %}Arsip Watchlist & Backup Data — Nonton Screening Index{% endblock %}
+
+{% block content %}
+<div class="space-y-8 pb-12">
+  <div class="flex flex-col justify-between gap-4 border-b border-[#FBF9ED]/15 pb-6 md:flex-row md:items-end">
+    <div class="space-y-1.5">
+      <h1 class="font-display text-3xl font-extrabold tracking-tight text-[#FBF9ED]">Arsip Watchlist & Cadangan Lokal</h1>
+      <p class="text-sm text-[#FBF9ED]/75 max-w-[65ch]">Disimpan otomatis di perangkat Anda tanpa akun. Ekspor atau impor file JSON untuk memindahkan data antar perangkat.</p>
+    </div>
+
+    <div class="flex flex-wrap gap-2.5 font-mono text-xs">
+      <button id="export-json-btn" type="button" class="border border-[#009AD0] bg-[#0B1620] px-4 py-2.5 font-bold text-[#FBF9ED] hover:bg-[#009AD0]/20">
+        EKSPOR CADANGAN (.JSON)
+      </button>
+      <label class="cursor-pointer border border-[#FBF9ED]/25 bg-[#0B1620] px-4 py-2.5 font-bold text-[#FBF9ED] hover:border-[#BE432C]">
+        IMPOR CADANGAN (.JSON)
+        <input id="import-json-input" type="file" accept=".json,application/json" class="hidden" />
+      </label>
+    </div>
+  </div>
+
+  <div id="watchlist-feedback" class="hidden border border-[#009AD0] bg-[#0B1620] px-4 py-3 font-mono text-xs font-bold text-[#009AD0]"></div>
+
+  <section class="space-y-4">
+    <h2 class="font-display text-xl font-bold text-[#FBF9ED]">Daftar Arsip Tersimpan</h2>
+    <div id="watchlist-grid" class="program-shelf grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"></div>
+  </section>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const grid = document.getElementById("watchlist-grid");
+  const feedback = document.getElementById("watchlist-feedback");
+  const exportBtn = document.getElementById("export-json-btn");
+  const importInput = document.getElementById("import-json-input");
+
+  const renderGrid = () => {
+    const list = window.NontonStore.getState().watchlist || [];
+    if (list.length === 0) {
+      grid.innerHTML = `<div class="col-span-full border border-[#FBF9ED]/15 bg-[#0B1620] py-14 text-center text-xs text-[#FBF9ED]/70">Arsip Watchlist masih kosong. Klik tombol <strong>Simpan Indeks</strong> pada film atau anime mana pun.</div>`;
+      return;
+    }
+    grid.innerHTML = list.map((item, idx) => `
+      <div class="poster-card flex flex-col">
+        <div class="flex items-center justify-between border-b border-[#FBF9ED]/15 bg-[#060D13] px-2.5 py-1.5 font-mono text-[10px]">
+          <span class="font-bold text-[#009AD0]">SAV-0${idx + 1}</span>
+          <span class="text-[#FBF9ED]">★ ${item.rating || "8.5"}</span>
+        </div>
+        <a href="/${item.media_type}/${item.id}" class="relative aspect-[2/3] w-full overflow-hidden bg-[#060D13] block">
+          <img src="${item.poster_url}" alt="${item.title}" onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600'" class="poster-img h-full w-full object-cover" />
+        </a>
+        <div class="p-2.5 border-t border-[#FBF9ED]/12 bg-[#0B1620]">
+          <a href="/${item.media_type}/${item.id}" class="block truncate text-xs font-bold text-[#FBF9ED] hover:text-[#009AD0]">${item.title}</a>
+          <span class="font-mono text-[10px] text-[#FBF9ED]/65">${item.release_year || ""}</span>
+        </div>
+      </div>
+    `).join("");
+  };
+
+  renderGrid();
+
+  exportBtn.addEventListener("click", () => {
+    const json = JSON.stringify(window.NontonStore.getState(), null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "nonton-pantone-backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    feedback.textContent = "FILE CADANGAN JSON BERHASIL DIUNDUH.";
+    feedback.classList.remove("hidden");
+  });
+
+  importInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        window.NontonStore.saveState(parsed);
+        renderGrid();
+        feedback.textContent = "DATA ARSIP & RIWAYAT BERHASIL DIPULIHKAN.";
+        feedback.classList.remove("hidden");
+      } catch {
+        feedback.textContent = "FORMAT FILE JSON TIDAK VALID.";
+        feedback.classList.remove("hidden");
+      }
+    };
+    reader.readAsText(file);
+  });
+});
+</script>
+{% endblock %}

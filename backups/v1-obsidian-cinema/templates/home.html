@@ -1,0 +1,203 @@
+{% extends "layout.html" %}
+
+{% block title %}Nonton Rust — Beranda Streaming Film, Serial TV & Anime{% endblock %}
+
+{% block content %}
+<div class="space-y-8 pb-12">
+  <!-- Hero Spotlight Carousel with Ken-Burns & Staggered Text Reveal -->
+  <section class="relative w-full overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 shadow-2xl">
+    {% for item in hero_items %}
+    <div
+      data-hero-slide="{{ loop.index0 }}"
+      class="{% if !loop.first %}hidden {% endif %}relative h-[460px] w-full sm:h-[520px] lg:h-[560px]"
+    >
+      <img
+        src="{{ item.backdrop_url }}"
+        alt="{{ item.title }}"
+        class="animate-ken-burns h-full w-full object-cover object-center"
+      />
+      <div class="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent"></div>
+
+      <div class="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 lg:p-14">
+        <div class="max-w-2xl space-y-4">
+          <div class="animate-stagger-1 flex flex-wrap items-center gap-2">
+            <span class="rounded-full bg-rose-500/20 border border-rose-500/40 px-3 py-0.5 text-xs font-bold text-rose-300">
+              ✨ Spotlight Pilihan
+            </span>
+            <span class="rounded-md bg-white/10 border border-white/15 px-2 py-0.5 font-mono text-[11px] font-bold uppercase text-white">
+              {{ item.badge_label() }}
+            </span>
+            <span class="rounded-md bg-zinc-900/90 border border-white/10 px-2 py-0.5 font-mono text-xs font-bold text-amber-400">
+              ★ {{ item.rating }}
+            </span>
+            <span class="font-mono text-xs text-zinc-300">{{ item.release_year }}</span>
+          </div>
+
+          <h1 class="animate-stagger-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl line-clamp-2">
+            {{ item.title }}
+          </h1>
+
+          <p class="animate-stagger-2 line-clamp-3 text-sm leading-relaxed text-zinc-300 sm:text-base max-w-xl">
+            {{ item.synopsis }}
+          </p>
+
+          <div class="animate-stagger-3 flex flex-wrap items-center gap-3 pt-2">
+            <a
+              href="{{ item.watch_href() }}"
+              class="btn-glow inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-bold text-white transition-transform hover:scale-105 hover:bg-rose-500"
+            >
+              <span>▶ Tonton Sekarang</span>
+            </a>
+            <a
+              href="{{ item.detail_href() }}"
+              class="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-zinc-900/80 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md hover:bg-zinc-800"
+            >
+              <span>Detail Lengkap</span>
+            </a>
+            <button
+              type="button"
+              data-watchlist-btn
+              data-id="{{ item.id }}"
+              data-type="{{ item.media_type }}"
+              data-title="{{ item.title }}"
+              data-poster="{{ item.poster_url }}"
+              data-backdrop="{{ item.backdrop_url }}"
+              data-rating="{{ item.rating }}"
+              data-year="{{ item.release_year }}"
+              class="rounded-xl border border-white/15 bg-zinc-900/80 px-4 py-3 text-sm font-semibold text-zinc-200 hover:bg-zinc-800"
+            >
+              + Watchlist
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Slide Dots -->
+    <div class="absolute bottom-6 right-8 hidden sm:flex items-center gap-2">
+      {% for item in hero_items %}
+      <button
+        type="button"
+        data-hero-dot="{{ loop.index0 }}"
+        class="{% if loop.first %}h-1.5 w-8 bg-rose-500{% else %}h-1.5 w-2 bg-white/30{% endif %} rounded-full transition-all"
+      ></button>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Continue Watching Row (Client LocalStorage) -->
+  <section id="continue-watching-section" class="hidden space-y-4 pt-2">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-bold text-white">Lanjutkan Menonton</h2>
+        <p class="text-xs text-zinc-400">Tersimpan otomatis di browser Anda tanpa login</p>
+      </div>
+      <button id="clear-history-btn" type="button" class="rounded-xl border border-white/10 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-400 hover:text-rose-400">
+        Bersihkan Riwayat
+      </button>
+    </div>
+    <div id="continue-watching-list" class="no-scrollbar flex gap-4 overflow-x-auto pb-2"></div>
+  </section>
+
+  <!-- Trending Anime Row -->
+  <section class="space-y-4">
+    <div class="flex items-end justify-between">
+      <div>
+        <h2 class="text-xl font-bold text-white sm:text-2xl">Anime Sedang Trending</h2>
+        <p class="text-xs text-zinc-400">Live dari AniList GraphQL • Sub & Dub</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/anime" class="text-xs font-bold text-rose-400 hover:underline mr-2">Lihat Semua →</a>
+        <button type="button" onclick="scrollMediaRow(this, 'left')" class="h-8 w-8 rounded-lg border border-white/10 bg-zinc-900 text-white hover:bg-zinc-800">‹</button>
+        <button type="button" onclick="scrollMediaRow(this, 'right')" class="h-8 w-8 rounded-lg border border-white/10 bg-zinc-900 text-white hover:bg-zinc-800">›</button>
+      </div>
+    </div>
+    <div data-row-track class="no-scrollbar flex gap-4 overflow-x-auto pb-3">
+      {% for item in trending_anime %}
+      <div class="w-[165px] shrink-0 sm:w-[195px]">
+        <div class="poster-card group relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-900">
+          <a href="{{ item.detail_href() }}" class="block h-full w-full">
+            <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="poster-img h-full w-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent"></div>
+          </a>
+          <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
+            <span class="rounded bg-rose-500/25 border border-rose-500/40 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-200 backdrop-blur-md">ANIME</span>
+            <span class="rounded bg-zinc-950/85 border border-white/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-amber-400">★ {{ item.rating }}</span>
+          </div>
+          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between">
+            <span class="rounded bg-amber-500/20 border border-amber-500/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-300">SUB/DUB</span>
+            <span class="rounded bg-zinc-950/85 border border-white/10 px-1.5 py-0.5 font-mono text-[10px] text-zinc-300">{{ item.total_episodes }} Ep</span>
+          </div>
+        </div>
+        <a href="{{ item.detail_href() }}" class="mt-2 block truncate text-sm font-bold text-white hover:text-rose-400">{{ item.title }}</a>
+        <p class="text-xs text-zinc-400">{{ item.release_year }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Trending Movies Row -->
+  <section class="space-y-4">
+    <div class="flex items-end justify-between">
+      <div>
+        <h2 class="text-xl font-bold text-white sm:text-2xl">Film Box Office Terpopuler</h2>
+        <p class="text-xs text-zinc-400">Multi-Server 1080p & 4K</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/movies" class="text-xs font-bold text-rose-400 hover:underline mr-2">Lihat Semua →</a>
+        <button type="button" onclick="scrollMediaRow(this, 'left')" class="h-8 w-8 rounded-lg border border-white/10 bg-zinc-900 text-white hover:bg-zinc-800">‹</button>
+        <button type="button" onclick="scrollMediaRow(this, 'right')" class="h-8 w-8 rounded-lg border border-white/10 bg-zinc-900 text-white hover:bg-zinc-800">›</button>
+      </div>
+    </div>
+    <div data-row-track class="no-scrollbar flex gap-4 overflow-x-auto pb-3">
+      {% for item in trending_movies %}
+      <div class="w-[165px] shrink-0 sm:w-[195px]">
+        <div class="poster-card group relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-900">
+          <a href="{{ item.detail_href() }}" class="block h-full w-full">
+            <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="poster-img h-full w-full object-cover" />
+          </a>
+          <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
+            <span class="rounded bg-indigo-500/25 border border-indigo-500/40 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-200 backdrop-blur-md">MOVIE</span>
+            <span class="rounded bg-zinc-950/85 border border-white/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-amber-400">★ {{ item.rating }}</span>
+          </div>
+        </div>
+        <a href="{{ item.detail_href() }}" class="mt-2 block truncate text-sm font-bold text-white hover:text-rose-400">{{ item.title }}</a>
+        <p class="text-xs text-zinc-400">{{ item.release_year }} • {{ item.duration }}m</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Trending TV Shows Row -->
+  <section class="space-y-4">
+    <div class="flex items-end justify-between">
+      <div>
+        <h2 class="text-xl font-bold text-white sm:text-2xl">Serial TV & Drama Pilihan</h2>
+        <p class="text-xs text-zinc-400">Maraton serial terbaik lengkap per season</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/tv" class="text-xs font-bold text-rose-400 hover:underline mr-2">Lihat Semua →</a>
+      </div>
+    </div>
+    <div data-row-track class="no-scrollbar flex gap-4 overflow-x-auto pb-3">
+      {% for item in trending_tv %}
+      <div class="w-[165px] shrink-0 sm:w-[195px]">
+        <div class="poster-card group relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-900">
+          <a href="{{ item.detail_href() }}" class="block h-full w-full">
+            <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="poster-img h-full w-full object-cover" />
+          </a>
+          <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
+            <span class="rounded bg-emerald-500/25 border border-emerald-500/40 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-200 backdrop-blur-md">TV SERIES</span>
+            <span class="rounded bg-zinc-950/85 border border-white/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-amber-400">★ {{ item.rating }}</span>
+          </div>
+        </div>
+        <a href="{{ item.detail_href() }}" class="mt-2 block truncate text-sm font-bold text-white hover:text-rose-400">{{ item.title }}</a>
+        <p class="text-xs text-zinc-400">{{ item.release_year }} • {{ item.total_episodes }} Ep</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

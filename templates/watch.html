@@ -1,0 +1,203 @@
+{% extends "layout.html" %}
+
+{% block title %}Putar {{ media.title }} — Multi-Server Player | Nonton{% endblock %}
+
+{% block content %}
+<div class="relative space-y-6 pb-12">
+  <!-- Cinema Dimming Overlay ("Lampu Mati") -->
+  <div id="cinema-dim-overlay" onclick="toggleCinemaDim()" class="hidden fixed inset-0 z-40 bg-black/95 transition-opacity"></div>
+
+  <!-- Ruled Breadcrumb Bar -->
+  <div class="flex flex-wrap items-center justify-between gap-2 border border-[#FBF9ED]/15 bg-[#0B1620] px-4 py-2.5 font-mono text-xs">
+    <div class="flex items-center gap-2.5">
+      <a href="{{ media.detail_href() }}" class="border border-[#FBF9ED]/20 bg-[#060D13] px-3 py-1 font-bold text-[#FBF9ED] hover:border-[#009AD0]">← INDEKS DETAIL</a>
+      <span class="text-[#FBF9ED]/50">//</span>
+      <strong class="text-[#FBF9ED]">{{ media.title }}</strong>
+      {% if media.media_type != "movie" %}
+      <span class="text-[#FBF9ED]/50">//</span>
+      <span class="bg-[#BE432C] px-2 py-0.5 font-bold text-[#FBF9ED]">EPISODE {{ current_episode }}</span>
+      {% endif %}
+    </div>
+    <span class="text-[#009AD0]">MULTI-SERVER STREAMING ENGINE</span>
+  </div>
+
+  <!-- Player & Episode Sidebar Grid -->
+  <div id="watch-grid" class="grid gap-6 {% if media.media_type != "movie" %}lg:grid-cols-[1fr_340px]{% else %}grid-cols-1{% endif %}">
+    <!-- Main Video Column -->
+    <div class="relative z-50 space-y-4">
+      <div class="relative aspect-video w-full overflow-hidden border border-[#FBF9ED]/25 bg-black shadow-2xl">
+        <div id="player-loading" class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#060D13]/95 font-mono text-xs text-[#FBF9ED] transition-opacity duration-300">
+          <div class="h-7 w-7 animate-spin border-2 border-[#009AD0] border-t-transparent"></div>
+          <span>MEMUAT STREAM VIDEO... (KLIK SERVER CADANGAN DI BAWAH JIKA LAMBAT)</span>
+        </div>
+        <iframe
+          id="stream-iframe"
+          src="{{ servers[0].embed_url }}"
+          title="{{ media.title }} Player"
+          allowfullscreen
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+          onload="document.getElementById('player-loading').style.opacity='0'"
+          class="relative z-10 h-full w-full border-0"
+        ></iframe>
+      </div>
+
+      <!-- Ruled Controls Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-3 border border-[#FBF9ED]/20 bg-[#0B1620] px-4 py-3 font-mono text-xs">
+        <div class="flex flex-wrap items-center gap-2">
+          {% if media.media_type != "movie" %}
+            {% if current_episode > 1 %}
+            <a href="{{ prev_href }}" class="border border-[#FBF9ED]/20 bg-[#060D13] px-3 py-2 font-bold text-[#FBF9ED] hover:border-[#009AD0]">← PREV</a>
+            {% endif %}
+            <span class="border border-[#009AD0]/50 bg-[#060D13] px-3 py-2 font-bold text-[#009AD0]">EP {{ current_episode }} / {{ media.total_episodes }}</span>
+            {% if current_episode < media.total_episodes %}
+            <a href="{{ next_href }}" class="bg-[#BE432C] px-3.5 py-2 font-bold text-[#FBF9ED] hover:opacity-90">NEXT EP →</a>
+            {% endif %}
+          {% endif %}
+
+          {% if media.media_type == "anime" %}
+          <div class="flex items-center border border-[#FBF9ED]/20 bg-[#060D13] p-0.5">
+            <a href="/watch/anime/{{ media.id }}/{{ current_episode }}?audio=sub" class="px-2.5 py-1.5 font-bold {% if active_audio == "sub" %}bg-[#BE432C] text-[#FBF9ED]{% else %}text-[#FBF9ED]/70 hover:text-[#FBF9ED]{% endif %}">SUB</a>
+            <a href="/watch/anime/{{ media.id }}/{{ current_episode }}?audio=dub" class="px-2.5 py-1.5 font-bold {% if active_audio == "dub" %}bg-[#009AD0] text-[#060D13]{% else %}text-[#FBF9ED]/70 hover:text-[#FBF9ED]{% endif %}">DUB</a>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          {% if media.media_type != "movie" %}
+          <button type="button" onclick="toggleTheaterMode()" id="theater-mode-btn" class="hidden lg:inline-flex border border-[#FBF9ED]/20 bg-[#060D13] px-3.5 py-2 font-bold text-[#FBF9ED] hover:border-[#009AD0]">
+            MODE LEBAR
+          </button>
+          {% endif %}
+          <button type="button" onclick="toggleCinemaDim()" id="cinema-dim-btn" class="border border-[#FBF9ED]/20 bg-[#060D13] px-3.5 py-2 font-bold text-[#FBF9ED] hover:border-[#009AD0]">
+            LAMPU MATI
+          </button>
+          <button
+            type="button"
+            data-watchlist-btn
+            data-id="{{ media.id }}"
+            data-type="{{ media.media_type }}"
+            data-title="{{ media.title }}"
+            data-poster="{{ media.poster_url }}"
+            data-backdrop="{{ media.backdrop_url }}"
+            data-rating="{{ media.rating }}"
+            data-year="{{ media.release_year }}"
+            class="border border-[#FBF9ED]/20 bg-[#060D13] px-3.5 py-2 font-bold text-[#FBF9ED] hover:border-[#009AD0]"
+          >
+            + ARSIP
+          </button>
+        </div>
+      </div>
+
+      <!-- Multi-Server Selector -->
+      <div class="border border-[#FBF9ED]/20 bg-[#0B1620] p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#FBF9ED]/12 pb-2.5">
+          <h2 class="font-display text-sm font-bold text-[#FBF9ED]">Pilih Jalur Server Streaming</h2>
+          <span class="font-mono text-[11px] text-[#009AD0]">GANTI SERVER JIKA STREAMING BUFFERING</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+          {% for srv in servers %}
+          <button
+            type="button"
+            data-server-btn
+            data-embed="{{ srv.embed_url }}"
+            onclick="switchStreamServer(this)"
+            class="border p-3 text-left transition-all {% if loop.first %}border-[#BE432C] bg-[#BE432C]/20 text-[#FBF9ED]{% else %}border-[#FBF9ED]/15 bg-[#060D13] text-[#FBF9ED] hover:border-[#009AD0]{% endif %}"
+          >
+            <div class="text-xs font-bold">{{ srv.name }}</div>
+            <div class="mt-0.5 font-mono text-[10px] text-[#009AD0]">{{ srv.badge }} • {{ srv.quality }}</div>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Episode Selector Sidebar with Search Filter -->
+    {% if media.media_type != "movie" %}
+    <div class="relative z-30 flex flex-col border border-[#FBF9ED]/20 bg-[#0B1620] p-4">
+      <div class="mb-3 border-b border-[#FBF9ED]/15 pb-3 flex items-center justify-between">
+        <h2 class="font-display text-sm font-bold text-[#FBF9ED]">
+          Daftar Episode ({{ media.total_episodes }})
+        </h2>
+        <span class="font-mono text-[10px] text-[#009AD0]">PILIH EP</span>
+      </div>
+
+      <input
+        type="text"
+        id="ep-filter-input"
+        oninput="filterEpisodeGrid(this.value)"
+        placeholder="Cari nomor episode..."
+        class="mb-3 w-full border border-[#FBF9ED]/20 bg-[#060D13] px-3 py-2 font-mono text-xs text-[#FBF9ED] placeholder-[#FBF9ED]/45 focus:border-[#009AD0] focus:outline-none"
+      />
+
+      <div id="ep-grid-container" class="grid grid-cols-4 gap-2 sm:grid-cols-5 max-h-[430px] overflow-y-auto pr-1">
+        {% for ep in 1..=episode_preview_limit %}
+        <a
+          data-ep-num="{{ ep }}"
+          href="{% if media.media_type == "tv" %}/watch/tv/{{ media.id }}/{{ current_season }}/{{ ep }}{% else %}/watch/anime/{{ media.id }}/{{ ep }}?audio={{ active_audio }}{% endif %}"
+          class="flex h-10 items-center justify-center border font-mono text-xs font-bold transition-all {% if ep == current_episode %}border-[#BE432C] bg-[#BE432C] text-[#FBF9ED]{% else %}border-[#FBF9ED]/15 bg-[#060D13] text-[#FBF9ED] hover:border-[#009AD0]{% endif %}"
+        >
+          {{ ep }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function switchStreamServer(btn) {
+  const iframe = document.getElementById("stream-iframe");
+  const loader = document.getElementById("player-loading");
+  if (loader) loader.style.opacity = "1";
+  if (iframe && btn.dataset.embed) {
+    iframe.src = btn.dataset.embed;
+  }
+  document.querySelectorAll("[data-server-btn]").forEach((b) => {
+    b.className = "border border-[#FBF9ED]/15 bg-[#060D13] p-3 text-left text-[#FBF9ED] hover:border-[#009AD0] transition-all";
+  });
+  btn.className = "border border-[#BE432C] bg-[#BE432C]/20 p-3 text-left text-[#FBF9ED] transition-all";
+}
+
+function toggleCinemaDim() {
+  const overlay = document.getElementById("cinema-dim-overlay");
+  const btn = document.getElementById("cinema-dim-btn");
+  if (!overlay) return;
+  overlay.classList.toggle("hidden");
+  const isDim = !overlay.classList.contains("hidden");
+  if (btn) btn.textContent = isDim ? "NYALAKAN LAMPU" : "LAMPU MATI";
+}
+
+function toggleTheaterMode() {
+  const grid = document.getElementById("watch-grid");
+  if (!grid) return;
+  grid.classList.toggle("lg:grid-cols-[1fr_340px]");
+  grid.classList.toggle("grid-cols-1");
+}
+
+function filterEpisodeGrid(val) {
+  const q = (val || "").trim();
+  document.querySelectorAll("#ep-grid-container [data-ep-num]").forEach((el) => {
+    if (!q || el.dataset.epNum.includes(q)) {
+      el.classList.remove("hidden");
+    } else {
+      el.classList.add("hidden");
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.NontonStore) {
+    window.NontonStore.upsertHistory({
+      id: "{{ media.id }}",
+      media_type: "{{ media.media_type }}",
+      title: "{{ media.title }}",
+      poster_url: "{{ media.poster_url }}",
+      backdrop_url: "{{ media.backdrop_url }}",
+      season: {{ current_season }},
+      episode: {{ current_episode }}
+    });
+  }
+});
+</script>
+{% endblock %}

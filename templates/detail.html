@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ media.title }} — Indeks Detail & Episode | Nonton{% endblock %}
+
+{% block content %}
+<div class="space-y-10 pb-14">
+  <!-- Ruled Dossier Header with Flight Parallax Stage -->
+  <div data-parallax-hero class="relative overflow-hidden border border-[#FBF9ED]/20 bg-[#0B1620]">
+    <div class="relative h-[300px] w-full sm:h-[380px] overflow-hidden bg-[#060D13]">
+      <img src="{{ media.backdrop_url }}" alt="{{ media.title }}" onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200'" class="hero-backdrop-img h-full w-full object-cover" />
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0B1620] via-[#0B1620]/80 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-[#0B1620] via-[#0B1620]/70 to-transparent"></div>
+    </div>
+
+    <div class="relative -mt-40 px-6 pb-8 sm:-mt-48 sm:px-10">
+      <div class="flex flex-col gap-6 md:flex-row md:items-end">
+        <!-- 1px Ruled Vertical Poster -->
+        <div class="w-40 shrink-0 overflow-hidden border-2 border-[#FBF9ED]/30 bg-[#060D13] shadow-2xl sm:w-52">
+          <img src="{{ media.poster_url }}" alt="{{ media.title }}" onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600'" class="aspect-[2/3] w-full object-cover" />
+        </div>
+
+        <div class="flex-1 space-y-4">
+          <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+            <span class="bg-[#BE432C] px-2.5 py-0.5 font-bold text-[#FBF9ED]">{{ media.badge_label() }}</span>
+            <span class="border border-[#FBF9ED]/20 bg-[#060D13] px-2.5 py-0.5 font-bold text-[#FBF9ED]">★ {{ media.rating }}</span>
+            <span class="border border-[#FBF9ED]/20 bg-[#060D13] px-2.5 py-0.5 text-[#009AD0]">{{ media.release_year }}</span>
+            <span class="border border-[#009AD0]/40 bg-[#060D13] px-2.5 py-0.5 font-bold text-[#009AD0]">{{ media.status }}</span>
+            <span class="text-[#FBF9ED]/75">// {{ media.studio }}</span>
+          </div>
+
+          <h1 class="font-display text-2xl font-extrabold tracking-tight text-[#FBF9ED] sm:text-4xl">{{ media.title }}</h1>
+
+          <div class="flex flex-wrap gap-1.5 font-mono text-xs">
+            {% for g in media.genres %}
+            <span class="border border-[#FBF9ED]/15 bg-[#060D13] px-2.5 py-1 text-[#009AD0]">{{ g }}</span>
+            {% endfor %}
+          </div>
+
+          <p class="max-w-[65ch] text-sm leading-relaxed text-[#FBF9ED]">{{ media.synopsis }}</p>
+
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <a
+              href="{{ media.watch_href() }}"
+              class="btn-pantone-primary inline-flex items-center gap-2 px-6 py-3 font-mono text-xs font-bold uppercase tracking-wider"
+            >
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <span>Mulai Putar Sekarang</span>
+            </a>
+            <button
+              type="button"
+              data-watchlist-btn
+              data-id="{{ media.id }}"
+              data-type="{{ media.media_type }}"
+              data-title="{{ media.title }}"
+              data-poster="{{ media.poster_url }}"
+              data-backdrop="{{ media.backdrop_url }}"
+              data-rating="{{ media.rating }}"
+              data-year="{{ media.release_year }}"
+              class="border border-[#FBF9ED]/25 bg-[#060D13] px-4 py-3 font-mono text-xs font-bold text-[#FBF9ED] hover:border-[#009AD0]"
+            >
+              + Simpan Indeks
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Episode Grid if Series or Anime -->
+  {% if media.media_type != "movie" %}
+  <section class="space-y-4 border border-[#FBF9ED]/20 bg-[#0B1620] p-5">
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#FBF9ED]/15 pb-3">
+      <h2 class="font-display text-lg font-bold text-[#FBF9ED]">Indeks Episode ({{ media.total_episodes }} Episode)</h2>
+      <span class="font-mono text-xs text-[#009AD0]">PILIH NOMOR EPISODE UNTUK MEMUTAR</span>
+    </div>
+    <div class="grid grid-cols-4 gap-2 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 max-h-80 overflow-y-auto pr-1">
+      {% for ep in 1..=episode_preview_limit %}
+      <a
+        href="{% if media.media_type == "tv" %}/watch/tv/{{ media.id }}/1/{{ ep }}{% else %}/watch/anime/{{ media.id }}/{{ ep }}{% endif %}"
+        class="flex h-10 items-center justify-center border border-[#FBF9ED]/15 bg-[#060D13] font-mono text-xs font-bold text-[#FBF9ED] transition-all hover:border-[#BE432C] hover:bg-[#BE432C]"
+      >
+        {{ ep }}
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Nonton — Criterion Screening Index & Flight Edition{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/cinema.css" />
+</head>
+<body class="min-h-screen bg-[#060D13] text-[#FBF9ED] antialiased selection:bg-[#BE432C] selection:text-[#FBF9ED]">
+  <!-- Top Scroll Progress Bar (Flight Scroll Engine) -->
+  <div id="scroll-progress-bar" class="fixed top-0 inset-x-0 z-50 h-0.5 pointer-events-none"></div>
+
+  <!-- Fixed Kinetic Background Structural Stage (i-type-ny.groznov.co/flight) -->
+  <div class="flight-watermark-stage" aria-hidden="true">
+    <div class="flight-beam flight-beam-1"></div>
+    <div class="flight-beam flight-beam-2"></div>
+    <div class="flight-beam flight-beam-3"></div>
+  </div>
+
+  <div class="relative z-10 flex min-h-screen flex-col">
+    <!-- 1px Ruled Criterion Festival Program Header Bar -->
+    <header class="sticky top-0 z-40 w-full border-b border-[#FBF9ED]/15 bg-[#060D13]/90 backdrop-blur-md">
+      <div class="mx-auto flex h-16 max-w-7xl items-stretch justify-between px-4 sm:px-6 lg:px-8">
+        <!-- Left Brand & Pantone Code Strip -->
+        <div class="flex items-stretch">
+          <a href="/" class="flex items-center gap-3 pr-6 border-r border-[#FBF9ED]/15 group">
+            <div class="flex h-9 w-9 items-center justify-center bg-[#BE432C] text-[#FBF9ED] border border-[#FBF9ED]/25 transition-transform group-hover:scale-105">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <span class="font-display text-lg font-extrabold tracking-tight text-[#FBF9ED] leading-none">NONTON</span>
+                <div class="pantone-code-strip" title="Pantone P 1-9 C • P 112-14 C • P 40-16 C">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+              <span class="font-mono text-[10px] tracking-widest text-[#009AD0] uppercase mt-0.5">CAT-INDEX // FLIGHT</span>
+            </div>
+          </a>
+
+          <!-- Ruled Navigation Cells -->
+          <nav class="hidden md:flex items-stretch">
+            <a href="/" class="flex items-center px-4 border-r border-[#FBF9ED]/12 text-xs font-semibold text-[#FBF9ED] hover:bg-[#0F1E2B] hover:text-[#009AD0] transition-colors">Beranda</a>
+            <a href="/movies" class="flex items-center px-4 border-r border-[#FBF9ED]/12 text-xs font-semibold text-[#FBF9ED] hover:bg-[#0F1E2B] hover:text-[#009AD0] transition-colors">Film</a>
+            <a href="/tv" class="flex items-center px-4 border-r border-[#FBF9ED]/12 text-xs font-semibold text-[#FBF9ED] hover:bg-[#0F1E2B] hover:text-[#009AD0] transition-colors">Serial TV</a>
+            <a href="/tv?genre=K-Drama" class="flex items-center px-4 border-r border-[#FBF9ED]/12 text-xs font-bold text-[#009AD0] hover:bg-[#009AD0]/15 transition-colors">K-Drama</a>
+            <a href="/anime" class="flex items-center px-4 border-r border-[#FBF9ED]/12 text-xs font-semibold text-[#FBF9ED] hover:bg-[#0F1E2B] hover:text-[#009AD0] transition-colors">Anime</a>
+            <a href="/schedule" class="flex items-center px-4 border-r border-[#FBF9ED]/12 text-xs font-bold text-[#BE432C] hover:bg-[#BE432C]/15 transition-colors">Jadwal Rilis</a>
+          </nav>
+        </div>
+
+        <!-- Right Search Command & Watchlist Index -->
+        <div class="flex items-center gap-2.5 pl-4">
+          <button
+            id="open-search-btn"
+            type="button"
+            class="flex items-center gap-3 border border-[#FBF9ED]/20 bg-[#0B1620] px-3.5 py-2 text-xs text-[#FBF9ED] transition-colors hover:border-[#009AD0]"
+          >
+            <svg class="w-3.5 h-3.5 stroke-[#009AD0]" viewBox="0 0 24 24" fill="none" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span class="hidden sm:inline">Cari indeks film, drakor, anime...</span>
+            <kbd class="hidden bg-[#060D13] px-1.5 py-0.5 font-mono text-[10px] text-[#009AD0] sm:inline-block border border-[#009AD0]/40">Ctrl K</kbd>
+          </button>
+
+          <a
+            href="/watchlist"
+            class="relative inline-flex items-center gap-2 border border-[#FBF9ED]/20 bg-[#0B1620] px-3.5 py-2 text-xs font-semibold text-[#FBF9ED] hover:border-[#009AD0] transition-colors"
+          >
+            <svg class="w-3.5 h-3.5 stroke-[#009AD0]" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+            <span class="hidden sm:inline">Arsip</span>
+            <span id="nav-watchlist-count" class="hidden bg-[#BE432C] px-1.5 py-0.2 font-mono text-[10px] font-bold text-[#FBF9ED]">0</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="mx-auto w-full max-w-7xl flex-1 px-4 pt-6 sm:px-6 lg:px-8">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Ruled Criterion Footer -->
+    <footer class="mt-20 border-t border-[#FBF9ED]/15 bg-[#060D13] pb-24 pt-10 md:pb-12">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#FBF9ED]">
+        <div class="flex items-center gap-3">
+          <div class="pantone-code-strip">
+            <span></span><span></span><span></span>
+          </div>
+          <span><strong>NONTON ARCHIVE</strong> — Pantone P 1-9 C • P 112-14 C • P 40-16 C // Flight Scroll Engine</span>
+        </div>
+        <div class="font-mono text-[11px] text-[#009AD0]">
+          SYS-BACKUP: backups/v1-obsidian-cinema/
+        </div>
+      </div>
+    </footer>
+
+    <!-- Mobile Fixed Glass Bottom Navigation Bar (< 768px) -->
+    <nav class="fixed bottom-0 inset-x-0 z-40 border-t border-[#FBF9ED]/15 bg-[#060D13]/95 backdrop-blur-md md:hidden">
+      <div class="grid grid-cols-5 h-16 divide-x divide-[#FBF9ED]/10">
+        <a href="/" class="flex flex-col items-center justify-center gap-1 text-[11px] font-semibold text-[#FBF9ED] hover:text-[#009AD0]">
+          <svg class="w-4 h-4 stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>Beranda</span>
+        </a>
+        <a href="/movies" class="flex flex-col items-center justify-center gap-1 text-[11px] font-semibold text-[#FBF9ED] hover:text-[#009AD0]">
+          <svg class="w-4 h-4 stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18M17 3v18M3 7.5h4M17 7.5h4M3 12h18M3 16.5h4M17 16.5h4"/></svg>
+          <span>Film</span>
+        </a>
+        <a href="/tv?genre=K-Drama" class="flex flex-col items-center justify-center gap-1 text-[11px] font-bold text-[#009AD0]">
+          <svg class="w-4 h-4 stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect width="20" height="15" x="2" y="7" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+          <span>K-Drama</span>
+        </a>
+        <a href="/schedule" class="flex flex-col items-center justify-center gap-1 text-[11px] font-semibold text-[#FBF9ED] hover:text-[#BE432C]">
+          <svg class="w-4 h-4 stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+          <span>Jadwal</span>
+        </a>
+        <a href="/watchlist" class="flex flex-col items-center justify-center gap-1 text-[11px] font-semibold text-[#FBF9ED] hover:text-[#009AD0]">
+          <svg class="w-4 h-4 stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+          <span>Arsip</span>
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Instant Command Search Modal (Ctrl + K) -->
+  <div id="search-modal" class="hidden fixed inset-0 z-50 flex items-start justify-center bg-[#060D13]/85 px-4 pt-16 backdrop-blur-md sm:pt-24">
+    <div id="search-modal-backdrop" class="fixed inset-0"></div>
+    <div class="relative z-10 w-full max-w-2xl overflow-hidden border border-[#009AD0] bg-[#0B1620] shadow-2xl">
+      <form id="instant-search-form" action="/search" method="GET" class="flex items-center border-b border-[#FBF9ED]/15 px-4 py-3.5 gap-3">
+        <svg class="w-4 h-4 stroke-[#009AD0] shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input
+          id="instant-search-input"
+          name="q"
+          type="text"
+          autocomplete="off"
+          placeholder="Ketik judul Film, Anime, atau K-Drama lalu tekan Enter (contoh: Godzilla)..."
+          class="w-full bg-transparent text-sm text-[#FBF9ED] placeholder-[#FBF9ED]/50 focus:outline-none sm:text-base"
+        />
+        <button type="submit" class="shrink-0 bg-[#BE432C] px-3.5 py-1.5 font-mono text-xs font-bold text-[#FBF9ED] hover:opacity-90">
+          ENTER
+        </button>
+        <button id="close-search-btn" type="button" class="shrink-0 border border-[#FBF9ED]/20 bg-[#060D13] px-2.5 py-1.5 font-mono text-xs text-[#FBF9ED] hover:border-[#009AD0]">ESC</button>
+      </form>
+      <div id="instant-search-results" class="max-h-[65vh] overflow-y-auto p-3 space-y-2"></div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

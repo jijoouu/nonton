@@ -1,0 +1,250 @@
+{% extends "layout.html" %}
+
+{% block title %}Nonton — Criterion Screening Index & Flight Edition{% endblock %}
+
+{% block content %}
+<div class="space-y-12 pb-12">
+  <!-- Split-Grid Ruled Hero Screening Stage with Flight Parallax -->
+  <section data-parallax-hero class="relative w-full overflow-hidden border border-[#FBF9ED]/20 bg-[#0B1620]">
+    {% for item in hero_items %}
+    <div
+      data-hero-slide="{{ loop.index0 }}"
+      class="{% if !loop.first %}hidden {% endif %}grid grid-cols-1 lg:grid-cols-12 min-h-[460px] lg:min-h-[520px]"
+    >
+      <!-- Left Column: Ruled Criterion Festival Program Dossier -->
+      <div class="hero-content-layer lg:col-span-5 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[#FBF9ED]/15 p-6 sm:p-8 lg:p-10 bg-[#0B1620] z-10">
+        <!-- Top Telemetry Bar -->
+        <div class="flex items-center justify-between border-b border-[#FBF9ED]/15 pb-4 font-mono text-xs">
+          <div class="flex items-center gap-2.5">
+            <span class="bg-[#BE432C] px-2 py-0.5 font-bold text-[#FBF9ED]">FEAT-0{{ loop.index }}</span>
+            <span class="text-[#009AD0] font-bold">{{ item.badge_label() }}</span>
+          </div>
+          <div class="flex items-center gap-3 text-[#FBF9ED]">
+            <span>SCORE {{ item.rating }}</span>
+            <span>//</span>
+            <span>{{ item.release_year }}</span>
+          </div>
+        </div>
+
+        <!-- Center Headline & Synopsis (65ch max measure, no eyebrow kicker) -->
+        <div class="my-auto py-6 space-y-4">
+          <h1 class="font-display text-3xl font-extrabold tracking-tight text-[#FBF9ED] sm:text-4xl lg:text-[2.65rem] leading-[1.08] line-clamp-2">
+            {{ item.title }}
+          </h1>
+
+          <div class="flex flex-wrap gap-1.5 font-mono text-[11px]">
+            {% for g in item.genres %}
+            <span class="border border-[#FBF9ED]/20 bg-[#060D13] px-2 py-0.5 text-[#009AD0]">{{ g }}</span>
+            {% endfor %}
+          </div>
+
+          <p class="line-clamp-3 text-sm leading-relaxed text-[#FBF9ED] max-w-[62ch]">
+            {{ item.synopsis }}
+          </p>
+        </div>
+
+        <!-- Bottom Action Bar -->
+        <div class="border-t border-[#FBF9ED]/15 pt-5 flex flex-wrap items-center gap-3">
+          <a
+            href="{{ item.watch_href() }}"
+            class="btn-pantone-primary inline-flex items-center gap-2.5 px-5 py-3 text-xs font-bold uppercase tracking-wider"
+          >
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <span>Putar Tayangan</span>
+          </a>
+          <a
+            href="{{ item.detail_href() }}"
+            class="inline-flex items-center gap-2 border border-[#009AD0] bg-[#060D13] px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#FBF9ED] hover:bg-[#009AD0]/20 transition-colors"
+          >
+            <span>Indeks Detail</span>
+          </a>
+          <button
+            type="button"
+            data-watchlist-btn
+            data-id="{{ item.id }}"
+            data-type="{{ item.media_type }}"
+            data-title="{{ item.title }}"
+            data-poster="{{ item.poster_url }}"
+            data-backdrop="{{ item.backdrop_url }}"
+            data-rating="{{ item.rating }}"
+            data-year="{{ item.release_year }}"
+            class="inline-flex items-center gap-1.5 border border-[#FBF9ED]/25 bg-[#060D13] px-3.5 py-3 text-xs font-semibold text-[#FBF9ED] hover:border-[#009AD0]"
+          >
+            + Arsip
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column: Widescreen Flight Parallax Stage -->
+      <div class="relative lg:col-span-7 min-h-[280px] overflow-hidden bg-[#060D13]">
+        <img
+          src="{{ item.backdrop_url }}"
+          alt="{{ item.title }}"
+          onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200'"
+          class="hero-backdrop-img h-full w-full object-cover object-center"
+        />
+        <div class="
+absolute inset-0 bg-gradient-to-r from-[#0B1620] via-transparent to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#060D13]/90 via-transparent to-transparent"></div>
+
+        <!-- Bottom-Left Technical Spec Overlay -->
+        <div class="absolute bottom-4 left-4 flex items-center gap-2 bg-[#060D13]/90 border border-[#FBF9ED]/20 px-3 py-1.5 font-mono text-[11px] text-[#FBF9ED]">
+          <span class="h-2 w-2 bg-[#009AD0]"></span>
+          <span>STREAM: 1080P / 4K MULTI-SERVER</span>
+          <span>•</span>
+          <span>STUDIO: {{ item.studio }}</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Slide Index Indicators -->
+    <div class="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 bg-[#060D13]/90 border border-[#FBF9ED]/20 p-1.5">
+      {% for item in hero_items %}
+      <button
+        type="button"
+        data-hero-dot="{{ loop.index0 }}"
+        aria-label="Slide {{ loop.index }}"
+        class="{% if loop.first %}h-2 w-10 bg-[#BE432C]{% else %}h-2 w-3 bg-[#FBF9ED]/30{% endif %} transition-all"
+      ></button>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Continue Watching Row (Client LocalStorage) -->
+  <section id="continue-watching-section" class="hidden space-y-4 border-t border-[#FBF9ED]/15 pt-8">
+    <div class="flex items-center justify-between">
+      <h2 class="font-display text-xl font-bold text-[#FBF9ED] sm:text-2xl">Lanjutkan Tayangan Terakhir</h2>
+      <button id="clear-history-btn" type="button" class="border border-[#FBF9ED]/20 bg-[#0B1620] px-3 py-1.5 font-mono text-xs text-[#FBF9ED] hover:border-[#BE432C]">
+        BERSIHKAN LOG
+      </button>
+    </div>
+    <div id="continue-watching-list" class="no-scrollbar flex gap-4 overflow-x-auto pb-2"></div>
+  </section>
+
+  <!-- Program Shelf 1: Trending Anime -->
+  <section class="program-shelf space-y-4 border-t border-[#FBF9ED]/15 pt-8">
+    <div class="flex items-end justify-between">
+      <div class="space-y-1">
+        <h2 class="font-display text-xl font-bold text-[#FBF9ED] sm:text-2xl">Simulcast & Anime Populer</h2>
+        <p class="text-xs text-[#FBF9ED]/75">Data langsung dari indeks AniList GraphQL dengan dukungan audio SUB dan DUB.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/anime" class="font-mono text-xs font-bold text-[#009AD0] hover:underline mr-2">INDEKS ANIME →</a>
+        <button type="button" onclick="scrollMediaRow(this, 'left')" aria-label="Geser kiri" class="h-8 w-8 border border-[#FBF9ED]/20 bg-[#0B1620] text-[#FBF9ED] hover:border-[#009AD0]">‹</button>
+        <button type="button" onclick="scrollMediaRow(this, 'right')" aria-label="Geser kanan" class="h-8 w-8 border border-[#FBF9ED]/20 bg-[#0B1620] text-[#FBF9ED] hover:border-[#009AD0]">›</button>
+      </div>
+    </div>
+
+    <div data-row-track class="no-scrollbar flex gap-4 overflow-x-auto pb-3">
+      {% for item in trending_anime %}
+      <div class="w-[170px] shrink-0 sm:w-[196px]">
+        <div class="poster-card group relative flex flex-col">
+          <!-- Top 1px Ruled Index Strip -->
+          <div class="flex items-center justify-between border-b border-[#FBF9ED]/15 bg-[#060D13] px-2.5 py-1.5 font-mono text-[10px]">
+            <span class="font-bold text-[#BE432C]">ANI-0{{ loop.index }}</span>
+            <span class="text-[#FBF9ED]">★ {{ item.rating }}</span>
+          </div>
+
+          <a href="{{ item.detail_href() }}" class="relative aspect-[2/3] w-full overflow-hidden bg-[#060D13] block">
+            <img src="{{ item.poster_url }}" alt="{{ item.title }}" onerror="this.src='https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600'" loading="lazy" class="poster-img h-full w-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-[#060D13] via-transparent to-transparent"></div>
+            <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between font-mono text-[10px]">
+              <span class="bg-[#060D13]/90 border border-[#009AD0]/50 px-1.5 py-0.5 font-bold text-[#009AD0]">SUB/DUB</span>
+              <span class="bg-[#060D13]/90 border border-[#FBF9ED]/20 px-1.5 py-0.5 text-[#FBF9ED]">{{ item.total_episodes }} EP</span>
+            </div>
+          </a>
+
+          <div class="p-2.5 border-t border-[#FBF9ED]/12 bg-[#0B1620]">
+            <a href="{{ item.detail_href() }}" class="block truncate text-xs font-bold text-[#FBF9ED] group-hover:text-[#009AD0]">{{ item.title }}</a>
+            <div class="mt-1 flex items-center justify-between font-mono text-[10px] text-[#FBF9ED]/70">
+              <span>{{ item.release_year }}</span>
+              <a href="{{ item.watch_href() }}" class="font-bold text-[#BE432C] hover:underline">PUTAR →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Program Shelf 2: Box Office Movies -->
+  <section class="program-shelf space-y-4 border-t border-[#FBF9ED]/15 pt-8">
+    <div class="flex items-end justify-between">
+      <div class="space-y-1">
+        <h2 class="font-display text-xl font-bold text-[#FBF9ED] sm:text-2xl">Katalog Film Layar Lebar</h2>
+        <p class="text-xs text-[#FBF9ED]/75">Tayangan film resolusi 1080p dan 4K dengan pemilihan multi-server instan.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/movies" class="font-mono text-xs font-bold text-[#009AD0] hover:underline mr-2">INDEKS FILM →</a>
+        <button type="button" onclick="scrollMediaRow(this, 'left')" aria-label="Geser kiri" class="h-8 w-8 border border-[#FBF9ED]/20 bg-[#0B1620] text-[#FBF9ED] hover:border-[#009AD0]">‹</button>
+        <button type="button" onclick="scrollMediaRow(this, 'right')" aria-label="Geser kanan" class="h-8 w-8 border border-[#FBF9ED]/20 bg-[#0B1620] text-[#FBF9ED] hover:border-[#009AD0]">›</button>
+      </div>
+    </div>
+
+    <div data-row-track class="no-scrollbar flex gap-4 overflow-x-auto pb-3">
+      {% for item in trending_movies %}
+      <div class="w-[170px] shrink-0 sm:w-[196px]">
+        <div class="poster-card group relative flex flex-col">
+          <div class="flex items-center justify-between border-b border-[#FBF9ED]/15 bg-[#060D13] px-2.5 py-1.5 font-mono text-[10px]">
+            <span class="font-bold text-[#009AD0]">MOV-0{{ loop.index }}</span>
+            <span class="text-[#FBF9ED]">★ {{ item.rating }}</span>
+          </div>
+
+          <a href="{{ item.detail_href() }}" class="relative aspect-[2/3] w-full overflow-hidden bg-[#060D13] block">
+            <img src="{{ item.poster_url }}" alt="{{ item.title }}" onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600'" loading="lazy" class="poster-img h-full w-full object-cover" />
+          </a>
+
+          <div class="p-2.5 border-t border-[#FBF9ED]/12 bg-[#0B1620]">
+            <a href="{{ item.detail_href() }}" class="block truncate text-xs font-bold text-[#FBF9ED] group-hover:text-[#009AD0]">{{ item.title }}</a>
+            <div class="mt-1 flex items-center justify-between font-mono text-[10px] text-[#FBF9ED]/70">
+              <span>{{ item.release_year }} • {{ item.duration }}M</span>
+              <a href="{{ item.watch_href() }}" class="font-bold text-[#BE432C] hover:underline">PUTAR →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Program Shelf 3: TV Series & K-Drama -->
+  <section class="program-shelf space-y-4 border-t border-[#FBF9ED]/15 pt-8">
+    <div class="flex items-end justify-between">
+      <div class="space-y-1">
+        <h2 class="font-display text-xl font-bold text-[#FBF9ED] sm:text-2xl">Serial TV & Drama Korea</h2>
+        <p class="text-xs text-[#FBF9ED]/75">Koleksi serial internasional dan K-Drama populer lengkap per episode.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="/tv?genre=K-Drama" class="font-mono text-xs font-bold text-[#BE432C] hover:underline">FILTER K-DRAMA →</a>
+        <a href="/tv" class="font-mono text-xs font-bold text-[#009AD0] hover:underline">SEMUA SERIAL →</a>
+      </div>
+    </div>
+
+    <div data-row-track class="no-scrollbar flex gap-4 overflow-x-auto pb-3">
+      {% for item in trending_tv %}
+      <div class="w-[170px] shrink-0 sm:w-[196px]">
+        <div class="poster-card group relative flex flex-col">
+          <div class="flex items-center justify-between border-b border-[#FBF9ED]/15 bg-[#060D13] px-2.5 py-1.5 font-mono text-[10px]">
+            <span class="font-bold text-[#009AD0]">SER-0{{ loop.index }}</span>
+            <span class="text-[#FBF9ED]">★ {{ item.rating }}</span>
+          </div>
+
+          <a href="{{ item.detail_href() }}" class="relative aspect-[2/3] w-full overflow-hidden bg-[#060D13] block">
+            <img src="{{ item.poster_url }}" alt="{{ item.title }}" onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600'" loading="lazy" class="poster-img h-full w-full object-cover" />
+          </a>
+
+          <div class="p-2.5 border-t border-[#FBF9ED]/12 bg-[#0B1620]">
+            <a href="{{ item.detail_href() }}" class="block truncate text-xs font-bold text-[#FBF9ED] group-hover:text-[#009AD0]">{{ item.title }}</a>
+            <div class="mt-1 flex items-center justify-between font-mono text-[10px] text-[#FBF9ED]/70">
+              <span>{{ item.release_year }}</span>
+              <a href="{{ item.watch_href() }}" class="font-bold text-[#BE432C] hover:underline">PUTAR →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

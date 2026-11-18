@@ -1,0 +1,224 @@
+@import url("https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@400;600;700&family=Syne:wght@700;800&family=Work+Sans:wght@400;500;600;700&display=swap");
+
+:root {
+  /* PANTONE OFFICIAL PALETTE */
+  --pantone-cream: #FBF9ED;       /* Pantone P 1-9 C */
+  --pantone-cerulean: #009AD0;    /* Pantone P 112-14 C */
+  --pantone-terracotta: #BE432C;  /* Pantone P 40-16 C */
+
+  /* Nocturnal Screening Room Ground (Derived from P 112-14 C) */
+  --bg-abyssal: #060D13;
+  --bg-surface: #0B1620;
+  --bg-card: #0F1E2B;
+  --rule-hairline: rgba(251, 249, 237, 0.14);
+  --rule-cerulean: rgba(0, 154, 208, 0.48);
+
+  /* Flight Scroll Dynamic Variables (i-type-ny.groznov.co/flight) */
+  --scroll-y: 0;
+  --scroll-progress: 0;
+  --scroll-velocity: 0;
+}
+
+html {
+  background-color: var(--bg-abyssal);
+  color: var(--pantone-cream);
+  font-family: "Work Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  scroll-behavior: smooth;
+  caret-color: var(--pantone-cerulean);
+}
+
+body {
+  background-color: var(--bg-abyssal);
+  color: var(--pantone-cream);
+  overflow-x: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background-color: var(--pantone-terracotta);
+  color: var(--pantone-cream);
+}
+
+:focus-visible {
+  outline: 2px solid var(--pantone-cerulean);
+  outline-offset: 2px;
+}
+
+a {
+  text-underline-offset: 4px;
+}
+
+.font-display {
+  font-family: "Syne", sans-serif;
+  letter-spacing: -0.03em;
+}
+
+.font-mono {
+  font-family: "Chivo Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* View Transitions API for Smooth Page Morphing */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.26s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Top Scroll Progress Indicator */
+#scroll-progress-bar {
+  transform-origin: left center;
+  transform: scaleX(var(--scroll-progress, 0));
+  background-color: var(--pantone-cerulean);
+}
+
+/* Saville 3-Color Pantone Code Bar */
+.pantone-code-strip {
+  display: inline-flex;
+  height: 10px;
+  border: 1px solid rgba(251, 249, 237, 0.25);
+}
+.pantone-code-strip span:nth-child(1) {
+  width: 14px;
+  background-color: var(--pantone-cream);
+}
+.pantone-code-strip span:nth-child(2) {
+  width: 14px;
+  background-color: var(--pantone-cerulean);
+}
+.pantone-code-strip span:nth-child(3) {
+  width: 14px;
+  background-color: var(--pantone-terracotta);
+}
+
+/* Kinetic Flight Background Structural Grid Stage (i-type-ny.groznov.co/flight) */
+.flight-watermark-stage {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.flight-beam {
+  position: absolute;
+  border-color: rgba(251, 249, 237, 0.05);
+  will-change: transform;
+}
+
+.flight-beam-1 {
+  top: 16%;
+  left: -10%;
+  width: 120%;
+  height: 1px;
+  background-color: rgba(251, 249, 237, 0.05);
+  transform: translate3d(calc(var(--scroll-y) * 0.18px), calc(var(--scroll-y) * -0.05px), 0);
+}
+
+.flight-beam-2 {
+  top: 52%;
+  right: -10%;
+  width: 120%;
+  height: 1px;
+  background-color: rgba(0, 154, 208, 0.07);
+  transform: translate3d(calc(var(--scroll-y) * -0.22px), calc(var(--scroll-y) * 0.04px), 0);
+}
+
+.flight-beam-3 {
+  top: 82%;
+  left: 0;
+  width: 120%;
+  height: 1px;
+  background-color: rgba(190, 67, 44, 0.07);
+  transform: translate3d(calc(var(--scroll-y) * 0.15px), calc(var(--scroll-y) * -0.06px), 0);
+}
+
+/* Hero Spotlight Flight Parallax */
+[data-parallax-hero] .hero-backdrop-img {
+  will-change: transform;
+  transform: translate3d(0, calc(var(--scroll-y) * 0.24px), 0) scale(calc(1.03 + var(--scroll-y) * 0.0002));
+  transition: transform 0.1s linear;
+}
+
+[data-parallax-hero] .hero-content-layer {
+  will-change: transform;
+  transform: translate3d(0, calc(var(--scroll-y) * -0.08px), 0);
+}
+
+/* Ruled Program Grid & Sibling Focus Dimming (Challenger #3 Raise) */
+.program-shelf {
+  transition: border-color 0.25s ease;
+}
+
+.program-shelf:hover .poster-card:not(:hover) {
+  opacity: 0.52;
+}
+
+/* Poster Card with 1px Ruled Architecture & Flight Hover */
+.poster-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--rule-hairline);
+  transition:
+    transform 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s ease,
+    opacity 0.28s ease;
+  will-change: transform, opacity;
+}
+
+.poster-card:hover {
+  transform: translate3d(0, -6px, 0) scale(1.02);
+  border-color: var(--pantone-cerulean);
+  box-shadow: 0 18px 36px -10px rgba(0, 0, 0, 0.78);
+  z-index: 10;
+}
+
+.poster-card:hover .poster-img {
+  transform: scale(1.06);
+}
+
+.poster-img {
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Primary Pantone Terracotta Action Button */
+.btn-pantone-primary {
+  background-color: var(--pantone-terracotta);
+  color: var(--pantone-cream);
+  border: 1px solid rgba(251, 249, 237, 0.22);
+  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.65);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease;
+}
+
+.btn-pantone-primary:hover {
+  background-color: #d14b32;
+  transform: translateY(-2px);
+}
+
+/* Custom Pantone Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-abyssal);
+}
+::-webkit-scrollbar-thumb {
+  background: #142B3B;
+  border: 1px solid rgba(251, 249, 237, 0.12);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pantone-cerulean);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
