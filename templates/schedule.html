@@ -1,49 +1,59 @@
 {% extends "layout.html" %}
 
-{% block title %}Jadwal Rilis Mingguan Anime — Nonton Rust{% endblock %}
+{% block title %}Simulcast Schedule — N' Weekly Anime Index{% endblock %}
 
 {% block content %}
-<div class="space-y-8 pb-12">
-  <div class="space-y-1.5 border-b border-white/10 pb-6">
-    <span class="font-mono text-xs uppercase tracking-widest text-rose-400">Simulcast Airing Calendar</span>
-    <h1 class="text-3xl font-extrabold tracking-tight text-white">Jadwal Rilis Mingguan Anime</h1>
-    <p class="text-sm text-zinc-400">Pantau jam tayang episode terbaru anime ongoing sesuai hari rilisnya.</p>
-  </div>
+<div class="bg-black text-white pt-28 pb-20 px-5 sm:px-10">
+  <div class="mx-auto max-w-[1600px] space-y-12">
+    <div class="space-y-3 border-b border-white/15 pb-10">
+      <div class="noth-paren">( Simulcast Airing Calendar )</div>
+      <h1 class="text-4xl sm:text-6xl font-normal tracking-tight text-white leading-none">
+        Weekly Anime Schedule
+      </h1>
+      <p class="text-sm sm:text-base text-neutral-400">
+        Live release timetable for ongoing anime episodes across Monday through Sunday.
+      </p>
+    </div>
 
-  <!-- Day Filter Tabs -->
-  <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-7">
-    <a href="/schedule?day=1" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 1 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Senin</a>
-    <a href="/schedule?day=2" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 2 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Selasa</a>
-    <a href="/schedule?day=3" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 3 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Rabu</a>
-    <a href="/schedule?day=4" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 4 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Kamis</a>
-    <a href="/schedule?day=5" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 5 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Jumat</a>
-    <a href="/schedule?day=6" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 6 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Sabtu</a>
-    <a href="/schedule?day=0" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 0 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Minggu</a>
-  </div>
+    <!-- Day Filter Pills -->
+    <div class="flex flex-wrap gap-2.5">
+      <a href="/schedule?day=1" class="noth-pill {% if active_day == 1 %}noth-pill-light{% else %}noth-pill-outline-light{% endif %}">MONDAY</a>
+      <a href="/schedule?day=2" class="noth-pill {% if active_day == 2 %}noth-pill-light{% else %}noth-pill-outline-light{% endif %}">TUESDAY</a>
+      <a href="/schedule?day=3" class="noth-pill {% if active_day == 3 %}noth-pill-light{% else %}noth-pill-outline-light{% endif %}">WEDNESDAY</a>
+      <a href="/schedule?day=4" class="noth-pill {% if active_day == 4 %}noth-pill-light{% else %}noth-pill-outline-light{% endif %}">THURSDAY</a>
+      <a href="/schedule?day=5" class="noth-pill {% if active_day == 5 %}noth-pill-light{% else %}noth-pill-outline-light{% endif %}">FRIDAY</a>
+      <a href="/schedule?day=6" class="noth-pill {% if active_day == 6 %}noth-pill-light{% else %}noth-pill-outline-light{% endif %}">SATURDAY</a>
+      <a href="/schedule?day=0" class="noth-pill {% if active_day == 0 %}noth-pill-light{% else %}noth-pill-outline-light{% endif %}">SUNDAY</a>
+    </div>
 
-  <!-- Schedule Cards -->
-  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-    {% for item in schedules %}
-    <div class="poster-card flex gap-4 rounded-2xl border border-white/10 bg-zinc-900/75 p-3.5">
-      <a href="{{ item.media.detail_href() }}" class="h-32 w-24 shrink-0 overflow-hidden rounded-xl bg-zinc-800 border border-white/10">
-        <img src="{{ item.media.poster_url }}" alt="{{ item.media.title }}" class="poster-img h-full w-full object-cover" />
-      </a>
-      <div class="flex min-w-0 flex-1 flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between gap-2">
-            <span class="rounded bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 font-mono text-[11px] font-bold text-rose-300">Ep {{ item.episode }}</span>
-            <span class="font-mono text-xs font-bold text-zinc-300">{{ item.time_wib }}</span>
+    <!-- Schedule Cards -->
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {% for item in schedules %}
+      <div class="flex gap-5 rounded-2xl border border-white/15 bg-neutral-950 p-4 hover:border-white transition-colors">
+        <a href="{{ item.media.detail_href() }}" class="h-36 w-24 shrink-0 overflow-hidden rounded-xl bg-neutral-900">
+          <img src="{{ item.media.poster_url }}" alt="{{ item.media.title }}" class="h-full w-full object-cover" />
+        </a>
+        <div class="flex min-w-0 flex-1 flex-col justify-between">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-2 font-mono text-xs">
+              <span class="rounded-full bg-white text-black px-2.5 py-0.5 font-bold">EP {{ item.episode }}</span>
+              <span class="text-neutral-400">{{ item.time_wib }}</span>
+            </div>
+            <a href="{{ item.media.detail_href() }}" class="block truncate text-base font-medium text-white hover:opacity-75">
+              {{ item.media.title }}
+            </a>
+            <p class="font-mono text-xs text-neutral-400">★ {{ item.media.rating }}</p>
           </div>
-          <a href="{{ item.media.detail_href() }}" class="mt-1.5 block truncate text-sm font-bold text-white hover:text-rose-400">{{ item.media.title }}</a>
-          <p class="mt-0.5 text-xs text-amber-400 font-mono">★ {{ item.media.rating }}</p>
-        </div>
-        <div class="flex items-center justify-between border-t border-white/5 pt-2">
-          <span class="font-mono text-[11px] text-emerald-400">⏱ {{ item.countdown_label }}</span>
-          <a href="{{ item.media.watch_href() }}" class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-500">▶ Tonton</a>
+          <div class="flex items-center justify-between border-t border-white/15 pt-3">
+            <span class="font-mono text-[11px] text-neutral-400">{{ item.countdown_label }}</span>
+            <a href="{{ item.media.watch_href() }}" class="noth-pill noth-pill-light !py-1.5 !px-3.5 !text-[10px]">
+              <span>WATCH →</span>
+            </a>
+          </div>
         </div>
       </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   </div>
 </div>
 {% endblock %}

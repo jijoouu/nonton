@@ -1,202 +1,546 @@
 {% extends "layout.html" %}
 
-{% block title %}Nonton Rust — Beranda Streaming Film, Serial TV & Anime{% endblock %}
+{% block title %}N' — Creative Streaming Studio | Film, Series, K-Drama & Anime{% endblock %}
 
 {% block content %}
-<div class="space-y-8 pb-12">
-  <!-- Hero Spotlight Carousel with Ken-Burns & Staggered Text Reveal -->
-  <section class="relative w-full overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 shadow-2xl">
-    {% for item in hero_items %}
-    <div
-      data-hero-slide="{{ loop.index0 }}"
-      class="{% if !loop.first %}hidden {% endif %}relative h-[460px] w-full sm:h-[520px] lg:h-[560px]"
-    >
-      <img
-        src="{{ item.backdrop_url }}"
-        alt="{{ item.title }}"
-        class="animate-ken-burns h-full w-full object-cover object-center"
-      />
-      <div class="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent"></div>
-      <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent"></div>
+<div>
+  <!-- =========================================================
+       1. STARK WHITE HERO STAGE & SHOWREEL REVEAL (.noth-hero-stage)
+       ========================================================= -->
+  <section class="noth-hero-stage">
+    <div class="mx-auto max-w-[1600px]">
+      <!-- Top Editorial Tagline Row -->
+      <div class="flex flex-col justify-between gap-6 sm:flex-row sm:items-start pb-8 sm:pb-12">
+        <div class="max-w-md text-sm sm:text-base font-medium leading-snug text-black">
+          <span class="line-mask delay-1"><span class="line-child">Not a catalog, a perspective.</span></span>
+          <span class="line-mask delay-2"><span class="line-child">Because Nonton' is Everythin'.</span></span>
+        </div>
+        <div class="flex items-center gap-6 font-mono text-xs uppercase tracking-widest text-neutral-500">
+          <span>( 01 / CURATED INDEX )</span>
+          <span class="hidden sm:inline">RUST AXUM ENGINE</span>
+        </div>
+      </div>
 
-      <div class="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 lg:p-14">
-        <div class="max-w-2xl space-y-4">
-          <div class="animate-stagger-1 flex flex-wrap items-center gap-2">
-            <span class="rounded-full bg-rose-500/20 border border-rose-500/40 px-3 py-0.5 text-xs font-bold text-rose-300">
-              ✨ Spotlight Pilihan
-            </span>
-            <span class="rounded-md bg-white/10 border border-white/15 px-2 py-0.5 font-mono text-[11px] font-bold uppercase text-white">
-              {{ item.badge_label() }}
-            </span>
-            <span class="rounded-md bg-zinc-900/90 border border-white/10 px-2 py-0.5 font-mono text-xs font-bold text-amber-400">
-              ★ {{ item.rating }}
-            </span>
-            <span class="font-mono text-xs text-zinc-300">{{ item.release_year }}</span>
-          </div>
+      <!-- Giant Scaling NONTON' Wordmark (Scales on Scroll like noth.in) -->
+      <div class="py-4 sm:py-8 overflow-hidden flex justify-center">
+        <div id="hero-zoom-wordmark" class="noth-giant-wordmark">
+          NONTON'
+        </div>
+      </div>
 
-          <h1 class="animate-stagger-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl line-clamp-2">
-            {{ item.title }}
+      <!-- Bottom Hero Headline & Pill CTA -->
+      <div class="mt-6 flex flex-col justify-between gap-6 border-t border-black/15 pt-6 sm:flex-row sm:items-end">
+        <div>
+          <div class="noth-paren !text-neutral-500 mb-2">( Multi-Server Streaming Platform )</div>
+          <h1 class="text-2xl sm:text-4xl lg:text-5xl font-normal tracking-tight text-black leading-none">
+            <span class="line-mask delay-3"><span class="line-child">Cinema &amp; Anime studio in 4K</span></span>
           </h1>
+        </div>
 
-          <p class="animate-stagger-2 line-clamp-3 text-sm leading-relaxed text-zinc-300 sm:text-base max-w-xl">
-            {{ item.synopsis }}
-          </p>
+        <div class="flex flex-wrap items-center gap-3">
+          <a href="#works" class="noth-pill noth-pill-dark">
+            <span>EXPLORE WORKS</span>
+            <span class="noth-pill-arrow">↓</span>
+          </a>
+          <button
+            type="button"
+            onclick="document.getElementById('open-search-btn').click()"
+            class="noth-pill noth-pill-outline-dark"
+          >
+            <span>SEARCH ARCHIVE</span>
+            <span class="noth-pill-arrow">→</span>
+          </button>
+        </div>
+      </div>
 
-          <div class="animate-stagger-3 flex flex-wrap items-center gap-3 pt-2">
-            <a
-              href="{{ item.watch_href() }}"
-              class="btn-glow inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-3 text-sm font-bold text-white transition-transform hover:scale-105 hover:bg-rose-500"
-            >
-              <span>▶ Tonton Sekarang</span>
-            </a>
-            <a
-              href="{{ item.detail_href() }}"
-              class="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-zinc-900/80 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md hover:bg-zinc-800"
-            >
-              <span>Detail Lengkap</span>
-            </a>
+      <!-- =========================================================
+           SHOWREEL / SPOTLIGHT REVEAL SECTION (Inside White Stage)
+           ========================================================= -->
+      <div class="mt-20 sm:mt-32 space-y-10">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 items-end">
+          <div class="lg:col-span-8">
+            <h2 class="text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-black leading-[1.08]">
+              Most platforms produce clutter.<br />
+              We prefer cinema.
+            </h2>
+          </div>
+          <div class="lg:col-span-4 lg:text-right">
+            <span class="noth-paren !text-neutral-500">( The Spotlight Showreel )</span>
+          </div>
+        </div>
+
+        <!-- Showreel Spotlight Carousel Card -->
+        <div id="hero-showreel-card" class="noth-showreel-card shadow-2xl">
+          {% for item in hero_items %}
+          <div
+            data-hero-slide="{{ loop.index0 }}"
+            class="{% if !loop.first %}hidden {% endif %}relative h-[480px] w-full sm:h-[580px] lg:h-[660px]"
+          >
+            <img
+              src="{{ item.backdrop_url }}"
+              alt="{{ item.title }}"
+              class="h-full w-full object-cover object-center scale-105 transition-transform duration-1000"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/15"></div>
+
+            <!-- Top Showreel Meta Bar -->
+            <div class="absolute top-6 left-6 right-6 sm:top-10 sm:left-10 sm:right-10 flex items-center justify-between text-xs font-mono uppercase tracking-widest text-white/80">
+              <div class="flex items-center gap-3">
+                <span class="rounded-full border border-white/30 bg-black/50 px-3.5 py-1.5 backdrop-blur-md">
+                  ( 0{{ loop.index }} / SPOTLIGHT )
+                </span>
+                <span class="rounded-full border border-white/25 bg-white text-black px-3 py-1 font-bold">
+                  {{ item.badge_label() }}
+                </span>
+              </div>
+              <div class="rounded-full border border-white/30 bg-black/60 px-4 py-1.5 backdrop-blur-md">
+                ★ {{ item.rating }} · {{ item.release_year }}
+              </div>
+            </div>
+
+            <!-- Bottom Showreel Content -->
+            <div class="absolute inset-x-0 bottom-0 p-6 sm:p-10 lg:p-14 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+              <div class="max-w-2xl space-y-4">
+                <h3 class="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.02]">
+                  {{ item.title }}
+                </h3>
+                <p class="line-clamp-2 sm:line-clamp-3 text-sm sm:text-base text-neutral-300 leading-relaxed max-w-xl">
+                  {{ item.synopsis }}
+                </p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-3 shrink-0">
+                <a href="{{ item.watch_href() }}" class="noth-pill noth-pill-light">
+                  <span>▶ WATCH STREAM</span>
+                  <span class="noth-pill-arrow">→</span>
+                </a>
+                <a href="{{ item.detail_href() }}" class="noth-pill noth-pill-outline-light backdrop-blur-md">
+                  <span>INDEX DETAIL</span>
+                </a>
+                <button
+                  type="button"
+                  data-watchlist-btn
+                  data-id="{{ item.id }}"
+                  data-type="{{ item.media_type }}"
+                  data-title="{{ item.title }}"
+                  data-poster="{{ item.poster_url }}"
+                  data-backdrop="{{ item.backdrop_url }}"
+                  data-rating="{{ item.rating }}"
+                  data-year="{{ item.release_year }}"
+                  class="noth-pill noth-pill-outline-light backdrop-blur-md"
+                >
+                  + WATCHLIST
+                </button>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+          <!-- Slide Counter Dots -->
+          <div class="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 z-20">
+            {% for item in hero_items %}
             <button
               type="button"
-              data-watchlist-btn
-              data-id="{{ item.id }}"
-              data-type="{{ item.media_type }}"
-              data-title="{{ item.title }}"
-              data-poster="{{ item.poster_url }}"
-              data-backdrop="{{ item.backdrop_url }}"
-              data-rating="{{ item.rating }}"
-              data-year="{{ item.release_year }}"
-              class="rounded-xl border border-white/15 bg-zinc-900/80 px-4 py-3 text-sm font-semibold text-zinc-200 hover:bg-zinc-800"
-            >
-              + Watchlist
+              data-hero-dot="{{ loop.index0 }}"
+              class="{% if loop.first %}h-2 w-8 bg-white{% else %}h-2 w-2 bg-white/35{% endif %} rounded-full transition-all"
+              aria-label="Slide {{ loop.index }}"
+            ></button>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Editorial Sub-Copy under Showreel (Matching noth.in "( The step aside )") -->
+        <div class="grid grid-cols-1 gap-6 pt-6 md:grid-cols-12 border-t border-black/15">
+          <div class="md:col-span-4">
+            <span class="noth-paren !text-neutral-500">( The step aside )</span>
+          </div>
+          <div class="md:col-span-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <p class="text-base sm:text-lg text-neutral-800 max-w-xl leading-relaxed">
+              Streaming dengan lima server cadangan otomatis (VidFast, VidLink, Vidy, VidZee, VidSrc), tanpa iklan pop-up yang mengganggu, dan tanpa perlu registrasi akun.
+            </p>
+            <a href="/schedule" class="noth-pill noth-pill-outline-dark shrink-0">
+              <span>SIMULCAST SCHEDULE</span>
+              <span class="noth-pill-arrow">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       2. CONTINUE WATCHING BAR (Client LocalStorage)
+       ========================================================= -->
+  <section id="continue-watching-section" class="hidden bg-black text-white pt-16 px-5 sm:px-10">
+    <div class="mx-auto max-w-[1600px] space-y-6 border-b border-white/15 pb-14">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <span class="noth-paren">( Continue Watching )</span>
+          <h2 class="text-xl sm:text-2xl font-medium tracking-tight text-white">Resume Your Session</h2>
+        </div>
+        <button id="clear-history-btn" type="button" class="noth-pill noth-pill-outline-light !py-2 !px-4 !text-[11px]">
+          <span>CLEAR HISTORY ×</span>
+        </button>
+      </div>
+      <div id="continue-watching-list" class="no-scrollbar flex gap-5 overflow-x-auto pb-2"></div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       3. #WORKS — ASYMMETRIC 6-COLUMN SHOWCASE (A N I M E)
+       ========================================================= -->
+  <section id="works" class="bg-black text-white pt-20 pb-24 px-5 sm:px-10">
+    <div class="mx-auto max-w-[1600px] space-y-16">
+      <!-- Spread Edge-to-Edge Sticky Header: a n i m e -->
+      <div class="sticky top-14 z-10 mix-blend-difference pointer-events-none">
+        <div class="noth-spread-word">
+          <span class="noth-spread-char">a</span>
+          <span class="noth-spread-char">n</span>
+          <span class="noth-spread-char">i</span>
+          <span class="noth-spread-char">m</span>
+          <span class="noth-spread-char">e</span>
+        </div>
+      </div>
+
+      <!-- Asymmetric 6-Column Grid (Matching noth.in .work_list choreography) -->
+      <div class="noth-work-grid relative z-20">
+        {% for item in trending_anime %}
+        {% if loop.index0 < 6 %}
+        <div class="{% if loop.index0 == 0 %}noth-col-full{% else if loop.index0 == 1 %}noth-col-right-4{% else if loop.index0 == 2 %}noth-col-left-4{% else if loop.index0 == 3 %}noth-col-full{% else if loop.index0 == 4 %}noth-col-left-3{% else %}noth-col-right-3{% endif %}">
+          <a href="{{ item.detail_href() }}" class="noth-media-card group">
+            <div class="noth-media-frame {% if loop.index0 == 0 || loop.index0 == 3 %}aspect-[16/9]{% else %}aspect-[4/3]{% endif %}">
+              <img
+                src="{% if loop.index0 == 0 || loop.index0 == 3 %}{{ item.backdrop_url }}{% else %}{{ item.poster_url }}{% endif %}"
+                alt="{{ item.title }}"
+                loading="lazy"
+                data-parallax-img
+                class="noth-media-img"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity"></div>
+              <div class="absolute top-4 left-4 flex items-center gap-2">
+                <span class="rounded-full bg-black/75 border border-white/20 px-3 py-1 font-mono text-[11px] uppercase text-white backdrop-blur-md">
+                  ( 0{{ loop.index }} / ANIME )
+                </span>
+                <span class="rounded-full bg-white text-black px-2.5 py-1 font-mono text-[11px] font-bold">
+                  ★ {{ item.rating }}
+                </span>
+              </div>
+              <div class="absolute bottom-4 right-4">
+                <span class="noth-pill noth-pill-light !py-2.5 !px-4 !text-[11px] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
+                  <span>WATCH EPISODE</span>
+                  <span class="noth-pill-arrow">→</span>
+                </span>
+              </div>
+            </div>
+            <div class="noth-media-meta">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="noth-paren">( 0{{ loop.index }} )</span>
+                <h3 class="text-lg sm:text-2xl font-medium tracking-tight text-white truncate group-hover:translate-x-1 transition-transform">
+                  {{ item.title }}
+                </h3>
+              </div>
+              <div class="font-mono text-xs text-neutral-400 shrink-0">
+                {{ item.release_year }} · {{ item.total_episodes }} EP
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Remaining Trending Anime Horizontal Strip + View All -->
+      <div class="space-y-6 pt-8 border-t border-white/15">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="noth-paren">( Extended Simulcast Index )</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="scrollMediaRow(this, 'left')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">←</button>
+            <button type="button" onclick="scrollMediaRow(this, 'right')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">→</button>
+            <a href="/anime" class="noth-pill noth-pill-light">
+              <span>VIEW ALL ANIME</span>
+              <span class="noth-paren !text-black">( {{ trending_anime.len() }} )</span>
+            </a>
+          </div>
+        </div>
+
+        <div data-row-track class="no-scrollbar flex gap-5 overflow-x-auto pb-4">
+          {% for item in trending_anime %}
+          <div class="w-[180px] sm:w-[220px] shrink-0">
+            <a href="{{ item.detail_href() }}" class="noth-media-card group">
+              <div class="noth-media-frame aspect-[2/3]">
+                <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="noth-media-img" />
+                <div class="absolute top-3 left-3 right-3 flex items-center justify-between">
+                  <span class="rounded-full bg-black/80 border border-white/20 px-2.5 py-0.5 font-mono text-[10px] text-white">SUB/DUB</span>
+                  <span class="rounded-full bg-white text-black px-2 py-0.5 font-mono text-[10px] font-bold">★ {{ item.rating }}</span>
+                </div>
+              </div>
+              <div class="pt-3 flex items-baseline justify-between gap-2">
+                <h4 class="truncate text-sm font-medium text-white group-hover:opacity-70">{{ item.title }}</h4>
+                <span class="font-mono text-[11px] text-neutral-500 shrink-0">{{ item.release_year }}</span>
+              </div>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       4. #STUDIO / FILMS — 3D PARALLAX & ASYMMETRIC CINEMA GRID
+       ========================================================= -->
+  <section class="bg-black text-white py-24 px-5 sm:px-10 border-t border-white/15 relative overflow-hidden">
+    <!-- Floating Scroll-Rotating 3D Sculptural Objects (Matching noth.in #studio) -->
+    <div
+      data-scroll-rotate="0.22"
+      class="noth-floating-obj pointer-events-none absolute right-[8%] top-20 hidden lg:flex h-28 w-28 items-center justify-center rounded-full border border-white/20 bg-white/5 backdrop-blur-md"
+    >
+      <span class="font-mono text-xs tracking-widest uppercase">✽ 4K HDR</span>
+    </div>
+
+    <div class="mx-auto max-w-[1600px] space-y-16">
+      <!-- Editorial Header Row -->
+      <div class="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
+        <div class="lg:col-span-4 space-y-2">
+          <div class="noth-paren">( The Box Office )</div>
+          <div class="font-mono text-xs text-neutral-500 uppercase">MULTI-SERVER ARCHITECTURE</div>
+        </div>
+        <div class="lg:col-span-8 space-y-6">
+          <h2 class="text-4xl sm:text-6xl font-normal tracking-tight leading-[1.06]">
+            Forms follow perspective.<br />
+            <span class="text-neutral-400">Box office cinema on demand.</span>
+          </h2>
+        </div>
+      </div>
+
+      <!-- Spread Edge-to-Edge Word: f i l m s -->
+      <div class="noth-spread-word">
+        <span class="noth-spread-char">f</span>
+        <span class="noth-spread-char">i</span>
+        <span class="noth-spread-char">l</span>
+        <span class="noth-spread-char">m</span>
+        <span class="noth-spread-char">s</span>
+      </div>
+
+      <!-- Asymmetric 6-Column Grid for Movies -->
+      <div class="noth-work-grid">
+        {% for item in trending_movies %}
+        {% if loop.index0 < 5 %}
+        <div class="{% if loop.index0 == 0 %}noth-col-left-4{% else if loop.index0 == 1 %}noth-col-right-4{% else if loop.index0 == 2 %}noth-col-full{% else if loop.index0 == 3 %}noth-col-left-3{% else %}noth-col-right-3{% endif %}">
+          <a href="{{ item.detail_href() }}" class="noth-media-card group">
+            <div class="noth-media-frame {% if loop.index0 == 2 %}aspect-[21/9]{% else %}aspect-[16/10]{% endif %}">
+              <img
+                src="{% if loop.index0 == 2 %}{{ item.backdrop_url }}{% else %}{{ item.poster_url }}{% endif %}"
+                alt="{{ item.title }}"
+                loading="lazy"
+                data-parallax-img
+                class="noth-media-img"
+              />
+              <div class="absolute top-4 left-4 flex items-center gap-2">
+                <span class="rounded-full bg-black/75 border border-white/20 px-3 py-1 font-mono text-[11px] uppercase text-white backdrop-blur-md">
+                  ( 0{{ loop.index }} / MOVIE )
+                </span>
+                <span class="rounded-full bg-white text-black px-2.5 py-1 font-mono text-[11px] font-bold">
+                  ★ {{ item.rating }}
+                </span>
+              </div>
+            </div>
+            <div class="noth-media-meta">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="noth-paren">( 0{{ loop.index }} )</span>
+                <h3 class="text-lg sm:text-2xl font-medium tracking-tight text-white truncate group-hover:translate-x-1 transition-transform">
+                  {{ item.title }}
+                </h3>
+              </div>
+              <div class="font-mono text-xs text-neutral-400 shrink-0">
+                {{ item.release_year }} · {{ item.duration }} MIN
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Full Movies Horizontal Shelf -->
+      <div class="space-y-6 pt-6">
+        <div class="flex items-center justify-between">
+          <span class="noth-paren">( Box Office Archive )</span>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="scrollMediaRow(this, 'left')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">←</button>
+            <button type="button" onclick="scrollMediaRow(this, 'right')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">→</button>
+            <a href="/movies" class="noth-pill noth-pill-outline-light">
+              <span>VIEW ALL MOVIES</span>
+              <span class="noth-pill-arrow">→</span>
+            </a>
+          </div>
+        </div>
+        <div data-row-track class="no-scrollbar flex gap-5 overflow-x-auto pb-4">
+          {% for item in trending_movies %}
+          <div class="w-[180px] sm:w-[220px] shrink-0">
+            <a href="{{ item.detail_href() }}" class="noth-media-card group">
+              <div class="noth-media-frame aspect-[2/3]">
+                <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="noth-media-img" />
+                <div class="absolute top-3 left-3 right-3 flex items-center justify-between">
+                  <span class="rounded-full bg-black/80 border border-white/20 px-2.5 py-0.5 font-mono text-[10px] text-white">MOVIE</span>
+                  <span class="rounded-full bg-white text-black px-2 py-0.5 font-mono text-[10px] font-bold">★ {{ item.rating }}</span>
+                </div>
+              </div>
+              <div class="pt-3 flex items-baseline justify-between gap-2">
+                <h4 class="truncate text-sm font-medium text-white group-hover:opacity-70">{{ item.title }}</h4>
+                <span class="font-mono text-[11px] text-neutral-500 shrink-0">{{ item.release_year }}</span>
+              </div>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       5. GLITCH / TEXT-SCRAMBLE MANIFESTO SECTION (.section.glitch)
+       ========================================================= -->
+  <section class="noth-glitch-section bg-black text-white px-5 sm:px-10 py-28">
+    <!-- Scattered Scrambled Glyphs & Floating Parallax Posters (Matching noth.in) -->
+    <div class="pointer-events-none absolute top-12 left-10 font-mono text-xs text-neutral-600 hidden md:block">
+      Pj(è !!” · U§hs · [RUST::AXUM] // 00:24:90
+    </div>
+    <div class="pointer-events-none absolute bottom-12 right-10 font-mono text-xs text-neutral-600 hidden md:block">
+      ( ZERO-LOGIN ) · §4K_STREAM · kjk_09
+    </div>
+
+    <div class="relative z-10 mx-auto max-w-4xl text-center space-y-6">
+      <div class="noth-paren">( Manifesto )</div>
+      <p
+        id="noth-glitch-manifesto"
+        data-glitch-target="We curate streaming experiences for those ready to go beyond the ordinary."
+        class="text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight leading-[1.12] text-white"
+      >
+        We curate streaming experiences for those ready to go beyond the ordinary.
+      </p>
+      <div class="pt-4 flex justify-center gap-3">
+        <a href="/tv?genre=K-Drama" class="noth-pill noth-pill-outline-light">
+          <span>EXPLORE K-DRAMA</span>
+          <span class="noth-pill-arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       6. #SERIES — SPREAD S E R I E S & K-DRAMA SHOWCASE
+       ========================================================= -->
+  <section class="bg-black text-white py-24 px-5 sm:px-10">
+    <div class="mx-auto max-w-[1600px] space-y-14">
+      <div class="noth-spread-word">
+        <span class="noth-spread-char">s</span>
+        <span class="noth-spread-char">e</span>
+        <span class="noth-spread-char">r</span>
+        <span class="noth-spread-char">i</span>
+        <span class="noth-spread-char">e</span>
+        <span class="noth-spread-char">s</span>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="space-y-1">
+          <span class="noth-paren">( Television &amp; Korean Drama )</span>
+          <p class="text-sm text-neutral-400">Full season episodic index with automatic Watchlist &amp; progress memory.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="button" onclick="scrollMediaRow(this, 'left')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">←</button>
+          <button type="button" onclick="scrollMediaRow(this, 'right')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">→</button>
+          <a href="/tv" class="noth-pill noth-pill-light">
+            <span>ALL SERIES</span>
+            <span class="noth-pill-arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+      <div data-row-track class="no-scrollbar flex gap-5 overflow-x-auto pb-4">
+        {% for item in trending_tv %}
+        <div class="w-[200px] sm:w-[250px] shrink-0">
+          <a href="{{ item.detail_href() }}" class="noth-media-card group">
+            <div class="noth-media-frame aspect-[2/3]">
+              <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="noth-media-img" />
+              <div class="absolute top-3 left-3 right-3 flex items-center justify-between">
+                <span class="rounded-full bg-black/80 border border-white/20 px-2.5 py-0.5 font-mono text-[10px] text-white">SERIES</span>
+                <span class="rounded-full bg-white text-black px-2 py-0.5 font-mono text-[10px] font-bold">★ {{ item.rating }}</span>
+              </div>
+            </div>
+            <div class="noth-media-meta">
+              <h4 class="truncate text-sm font-medium text-white group-hover:translate-x-1 transition-transform">{{ item.title }}</h4>
+              <span class="font-mono text-[11px] text-neutral-500 shrink-0">{{ item.release_year }}</span>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       7. #FAQS — NOTH.IN INTERACTIVE ACCORDION SECTION
+       ========================================================= -->
+  <section class="bg-black text-white py-24 px-5 sm:px-10 border-t border-white/15">
+    <div class="mx-auto max-w-[1600px] space-y-16">
+      <!-- Spread Edge-to-Edge F A Q S Header -->
+      <div class="noth-spread-word !border-t-0">
+        <span class="noth-spread-char !uppercase">F</span>
+        <span class="noth-spread-char !uppercase">A</span>
+        <span class="noth-spread-char !uppercase">Q</span>
+        <span class="noth-spread-char !uppercase">S</span>
+      </div>
+
+      <div class="grid grid-cols-1 gap-12 lg:grid-cols-12 items-start">
+        <div class="lg:col-span-4 space-y-3">
+          <div class="noth-paren">( Questions we are asked )</div>
+          <p class="text-sm text-neutral-400">Everything about our pure Rust engine &amp; streaming servers.</p>
+        </div>
+
+        <div class="lg:col-span-8">
+          <div class="noth-faq-item is-open">
+            <div class="noth-faq-line-active"></div>
+            <button type="button" class="noth-faq-btn" onclick="this.parentElement.classList.toggle('is-open')">
+              <span class="text-lg sm:text-2xl font-normal tracking-tight">Bagaimana jika server utama buffering atau tidak muncul?</span>
+              <span class="noth-faq-icon">+</span>
             </button>
+            <div class="noth-faq-answer">
+              <p class="text-sm sm:text-base text-neutral-400 leading-relaxed max-w-2xl">
+                Setiap halaman tontonan dilengkapi dengan 5 server multi-provider (VidFast, VidLink, Vidy, VidZee, dan VidSrc). Cukup klik salah satu tombol server cadangan di bawah pemutar video untuk berpindah secara instan tanpa memuat ulang halaman.
+              </p>
+            </div>
+          </div>
+
+          <div class="noth-faq-item">
+            <div class="noth-faq-line-active"></div>
+            <button type="button" class="noth-faq-btn" onclick="this.parentElement.classList.toggle('is-open')">
+              <span class="text-lg sm:text-2xl font-normal tracking-tight">Apakah saya perlu login untuk menyimpan Watchlist dan History?</span>
+              <span class="noth-faq-icon">+</span>
+            </button>
+            <div class="noth-faq-answer">
+              <p class="text-sm sm:text-base text-neutral-400 leading-relaxed max-w-2xl">
+                Tidak perlu. Nonton menggunakan arsitektur Zero-Login LocalStorage. Seluruh daftar simpanan, episode terakhir yang ditonton, dan riwayat pencarian disimpan langsung di perangkat Anda dan dapat di-export/import sebagai file JSON kapan saja.
+              </p>
+            </div>
+          </div>
+
+          <div class="noth-faq-item border-b border-white/15">
+            <div class="noth-faq-line-active"></div>
+            <button type="button" class="noth-faq-btn" onclick="this.parentElement.classList.toggle('is-open')">
+              <span class="text-lg sm:text-2xl font-normal tracking-tight">Mengapa aplikasi ini terasa sangat cepat saat berpindah halaman?</span>
+              <span class="noth-faq-icon">+</span>
+            </button>
+            <div class="noth-faq-answer">
+              <p class="text-sm sm:text-base text-neutral-400 leading-relaxed max-w-2xl">
+                Seluruh backend dan template HTML dikompilasi langsung ke dalam satu binary native menggunakan Rust (Axum + Askama) dengan waktu render di bawah 1 milidetik, dipadukan dengan Lenis smooth inertial scroll engine.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    {% endfor %}
-
-    <!-- Slide Dots -->
-    <div class="absolute bottom-6 right-8 hidden sm:flex items-center gap-2">
-      {% for item in hero_items %}
-      <button
-        type="button"
-        data-hero-dot="{{ loop.index0 }}"
-        class="{% if loop.first %}h-1.5 w-8 bg-rose-500{% else %}h-1.5 w-2 bg-white/30{% endif %} rounded-full transition-all"
-      ></button>
-      {% endfor %}
-    </div>
-  </section>
-
-  <!-- Continue Watching Row (Client LocalStorage) -->
-  <section id="continue-watching-section" class="hidden space-y-4 pt-2">
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-xl font-bold text-white">Lanjutkan Menonton</h2>
-        <p class="text-xs text-zinc-400">Tersimpan otomatis di browser Anda tanpa login</p>
-      </div>
-      <button id="clear-history-btn" type="button" class="rounded-xl border border-white/10 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-400 hover:text-rose-400">
-        Bersihkan Riwayat
-      </button>
-    </div>
-    <div id="continue-watching-list" class="no-scrollbar flex gap-4 overflow-x-auto pb-2"></div>
-  </section>
-
-  <!-- Trending Anime Row -->
-  <section class="space-y-4">
-    <div class="flex items-end justify-between">
-      <div>
-        <h2 class="text-xl font-bold text-white sm:text-2xl">Anime Sedang Trending</h2>
-        <p class="text-xs text-zinc-400">Live dari AniList GraphQL • Sub & Dub</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <a href="/anime" class="text-xs font-bold text-rose-400 hover:underline mr-2">Lihat Semua →</a>
-        <button type="button" onclick="scrollMediaRow(this, 'left')" class="h-8 w-8 rounded-lg border border-white/10 bg-zinc-900 text-white hover:bg-zinc-800">‹</button>
-        <button type="button" onclick="scrollMediaRow(this, 'right')" class="h-8 w-8 rounded-lg border border-white/10 bg-zinc-900 text-white hover:bg-zinc-800">›</button>
-      </div>
-    </div>
-    <div data-row-track class="no-scrollbar flex gap-4 overflow-x-auto pb-3">
-      {% for item in trending_anime %}
-      <div class="w-[165px] shrink-0 sm:w-[195px]">
-        <div class="poster-card group relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-900">
-          <a href="{{ item.detail_href() }}" class="block h-full w-full">
-            <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="poster-img h-full w-full object-cover" />
-            <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent"></div>
-          </a>
-          <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
-            <span class="rounded bg-rose-500/25 border border-rose-500/40 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-200 backdrop-blur-md">ANIME</span>
-            <span class="rounded bg-zinc-950/85 border border-white/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-amber-400">★ {{ item.rating }}</span>
-          </div>
-          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between">
-            <span class="rounded bg-amber-500/20 border border-amber-500/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-300">SUB/DUB</span>
-            <span class="rounded bg-zinc-950/85 border border-white/10 px-1.5 py-0.5 font-mono text-[10px] text-zinc-300">{{ item.total_episodes }} Ep</span>
-          </div>
-        </div>
-        <a href="{{ item.detail_href() }}" class="mt-2 block truncate text-sm font-bold text-white hover:text-rose-400">{{ item.title }}</a>
-        <p class="text-xs text-zinc-400">{{ item.release_year }}</p>
-      </div>
-      {% endfor %}
-    </div>
-  </section>
-
-  <!-- Trending Movies Row -->
-  <section class="space-y-4">
-    <div class="flex items-end justify-between">
-      <div>
-        <h2 class="text-xl font-bold text-white sm:text-2xl">Film Box Office Terpopuler</h2>
-        <p class="text-xs text-zinc-400">Multi-Server 1080p & 4K</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <a href="/movies" class="text-xs font-bold text-rose-400 hover:underline mr-2">Lihat Semua →</a>
-        <button type="button" onclick="scrollMediaRow(this, 'left')" class="h-8 w-8 rounded-lg border border-white/10 bg-zinc-900 text-white hover:bg-zinc-800">‹</button>
-        <button type="button" onclick="scrollMediaRow(this, 'right')" class="h-8 w-8 rounded-lg border border-white/10 bg-zinc-900 text-white hover:bg-zinc-800">›</button>
-      </div>
-    </div>
-    <div data-row-track class="no-scrollbar flex gap-4 overflow-x-auto pb-3">
-      {% for item in trending_movies %}
-      <div class="w-[165px] shrink-0 sm:w-[195px]">
-        <div class="poster-card group relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-900">
-          <a href="{{ item.detail_href() }}" class="block h-full w-full">
-            <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="poster-img h-full w-full object-cover" />
-          </a>
-          <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
-            <span class="rounded bg-indigo-500/25 border border-indigo-500/40 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-200 backdrop-blur-md">MOVIE</span>
-            <span class="rounded bg-zinc-950/85 border border-white/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-amber-400">★ {{ item.rating }}</span>
-          </div>
-        </div>
-        <a href="{{ item.detail_href() }}" class="mt-2 block truncate text-sm font-bold text-white hover:text-rose-400">{{ item.title }}</a>
-        <p class="text-xs text-zinc-400">{{ item.release_year }} • {{ item.duration }}m</p>
-      </div>
-      {% endfor %}
-    </div>
-  </section>
-
-  <!-- Trending TV Shows Row -->
-  <section class="space-y-4">
-    <div class="flex items-end justify-between">
-      <div>
-        <h2 class="text-xl font-bold text-white sm:text-2xl">Serial TV & Drama Pilihan</h2>
-        <p class="text-xs text-zinc-400">Maraton serial terbaik lengkap per season</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <a href="/tv" class="text-xs font-bold text-rose-400 hover:underline mr-2">Lihat Semua →</a>
-      </div>
-    </div>
-    <div data-row-track class="no-scrollbar flex gap-4 overflow-x-auto pb-3">
-      {% for item in trending_tv %}
-      <div class="w-[165px] shrink-0 sm:w-[195px]">
-        <div class="poster-card group relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-900">
-          <a href="{{ item.detail_href() }}" class="block h-full w-full">
-            <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="poster-img h-full w-full object-cover" />
-          </a>
-          <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
-            <span class="rounded bg-emerald-500/25 border border-emerald-500/40 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-200 backdrop-blur-md">TV SERIES</span>
-            <span class="rounded bg-zinc-950/85 border border-white/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-amber-400">★ {{ item.rating }}</span>
-          </div>
-        </div>
-        <a href="{{ item.detail_href() }}" class="mt-2 block truncate text-sm font-bold text-white hover:text-rose-400">{{ item.title }}</a>
-        <p class="text-xs text-zinc-400">{{ item.release_year }} • {{ item.total_episodes }} Ep</p>
-      </div>
-      {% endfor %}
     </div>
   </section>
 </div>

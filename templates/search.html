@@ -1,98 +1,91 @@
 {% extends "layout.html" %}
 
-{% block title %}Hasil Pencarian "{{ query }}" — Nonton Rust{% endblock %}
+{% block title %}Search "{{ query }}" — N' Index{% endblock %}
 
 {% block content %}
-<div class="space-y-8 pb-14">
-  <!-- Search Bar Header -->
-  <div class="rounded-3xl border border-white/10 bg-zinc-900/75 p-6 shadow-xl">
-    <form action="/search" method="GET" class="space-y-4">
-      <div class="flex flex-col gap-3 sm:flex-row">
-        <div class="relative flex-1">
-          <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-rose-500">🔍</span>
+<div class="bg-black text-white pt-28 pb-20 px-5 sm:px-10">
+  <div class="mx-auto max-w-[1600px] space-y-12">
+    <!-- Search Bar Header -->
+    <div class="border-b border-white/15 pb-10 space-y-6">
+      <div class="noth-paren">( Global Archive Search )</div>
+      <form action="/search" method="GET" class="space-y-6">
+        <div class="flex flex-col gap-4 sm:flex-row">
           <input
             type="text"
             name="q"
             value="{{ query }}"
-            placeholder="Ketik judul Film, Anime, atau K-Drama lalu tekan Enter (contoh: Godzilla, Queen of Tears, Solo Leveling)..."
-            class="w-full rounded-2xl border border-white/15 bg-zinc-950 py-3.5 pl-11 pr-4 text-sm font-medium text-white placeholder-zinc-500 focus:border-rose-500 focus:outline-none sm:text-base"
+            placeholder="Search movies, series, K-Drama, or anime..."
+            class="w-full rounded-full border border-white/25 bg-transparent py-4 px-6 text-base text-white placeholder-neutral-500 focus:border-white focus:outline-none sm:text-lg"
           />
           <input type="hidden" name="type" value="{{ active_type }}" />
-        </div>
-        <button
-          type="submit"
-          class="rounded-2xl bg-rose-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-rose-600/25 transition-transform hover:scale-[1.02] hover:bg-rose-500"
-        >
-          Cari Sekarang ↵
-        </button>
-      </div>
-
-      <!-- Category Filter Tabs -->
-      <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-        <div class="flex flex-wrap items-center gap-2">
-          <a
-            href="/search?q={{ query }}&type=all"
-            class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all {% if active_type == "all" %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-950 text-zinc-400 hover:text-white{% endif %}"
-          >
-            Semua ({{ total_count }})
-          </a>
-          <a
-            href="/search?q={{ query }}&type=movie"
-            class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all {% if active_type == "movie" %}border-indigo-500 bg-indigo-600 text-white{% else %}border-white/10 bg-zinc-950 text-zinc-400 hover:text-white{% endif %}"
-          >
-            🎬 Film (Movies)
-          </a>
-          <a
-            href="/search?q={{ query }}&type=tv"
-            class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all {% if active_type == "tv" %}border-emerald-500 bg-emerald-600 text-white{% else %}border-white/10 bg-zinc-950 text-zinc-400 hover:text-white{% endif %}"
-          >
-            📺 Serial TV & K-Drama
-          </a>
-          <a
-            href="/search?q={{ query }}&type=anime"
-            class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all {% if active_type == "anime" %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-950 text-zinc-400 hover:text-white{% endif %}"
-          >
-            ✨ Anime
-          </a>
+          <button type="submit" class="noth-pill noth-pill-light shrink-0 !px-8">
+            <span>SEARCH INDEX</span>
+            <span class="noth-pill-arrow">↵</span>
+          </button>
         </div>
 
-        <span class="font-mono text-xs text-zinc-400">
-          Menampilkan <strong>{{ items.len() }}</strong> hasil untuk <strong class="text-white">"{{ query }}"</strong>
-        </span>
-      </div>
-    </form>
-  </div>
+        <!-- Category Filter Pills -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <a
+              href="/search?q={{ query }}&type=all"
+              class="noth-pill {% if active_type == "all" %}noth-pill-light{% else %}noth-pill-outline-light{% endif %} !py-2 !px-4 !text-[11px]"
+            >
+              ALL ({{ total_count }})
+            </a>
+            <a
+              href="/search?q={{ query }}&type=movie"
+              class="noth-pill {% if active_type == "movie" %}noth-pill-light{% else %}noth-pill-outline-light{% endif %} !py-2 !px-4 !text-[11px]"
+            >
+              MOVIES
+            </a>
+            <a
+              href="/search?q={{ query }}&type=tv"
+              class="noth-pill {% if active_type == "tv" %}noth-pill-light{% else %}noth-pill-outline-light{% endif %} !py-2 !px-4 !text-[11px]"
+            >
+              SERIES &amp; K-DRAMA
+            </a>
+            <a
+              href="/search?q={{ query }}&type=anime"
+              class="noth-pill {% if active_type == "anime" %}noth-pill-light{% else %}noth-pill-outline-light{% endif %} !py-2 !px-4 !text-[11px]"
+            >
+              ANIME
+            </a>
+          </div>
 
-  <!-- Results Grid -->
-  {% if items.is_empty() %}
-  <div class="rounded-3xl border border-white/10 bg-zinc-900/40 py-20 text-center px-4">
-    <p class="text-base font-bold text-white">Tidak ditemukan hasil untuk "{{ query }}"</p>
-    <p class="mt-1 text-xs text-zinc-400">Coba gunakan kata kunci judul bahasa Inggris atau Jepang (contoh: Godzilla, Dune, Squid Game, One Piece).</p>
-  </div>
-  {% else %}
-  <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-    {% for item in items %}
-    <div class="flex flex-col">
-      <div class="poster-card group relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-900">
-        <a href="{{ item.detail_href() }}" class="block h-full w-full">
-          <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="poster-img h-full w-full object-cover" />
-          <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent"></div>
-        </a>
-        <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
-          <span class="rounded bg-zinc-950/85 border border-white/15 px-2 py-0.5 font-mono text-[10px] font-bold text-white">{{ item.badge_label() }}</span>
-          <span class="rounded bg-zinc-950/85 border border-white/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-amber-400">★ {{ item.rating }}</span>
+          <span class="font-mono text-xs text-neutral-400">
+            ( SHOWING {{ items.len() }} RESULTS FOR "{{ query }}" )
+          </span>
         </div>
-        <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between">
-          <a href="{{ item.watch_href() }}" class="w-full rounded-lg bg-rose-600/95 py-1.5 text-center text-xs font-bold text-white shadow-lg opacity-0 transition-opacity group-hover:opacity-100 hover:bg-rose-500">
-            ▶ Tonton Sekarang
-          </a>
-        </div>
-      </div>
-      <a href="{{ item.detail_href() }}" class="mt-2 truncate text-sm font-bold text-white hover:text-rose-400">{{ item.title }}</a>
-      <span class="text-xs text-zinc-400">{{ item.release_year }}</span>
+      </form>
     </div>
-    {% endfor %}
+
+    <!-- Results Grid -->
+    {% if items.is_empty() %}
+    <div class="rounded-2xl border border-white/15 py-24 text-center px-4 space-y-2">
+      <div class="noth-paren">( 0 Results )</div>
+      <p class="text-xl font-normal text-white">No works found matching "{{ query }}"</p>
+      <p class="text-xs font-mono text-neutral-500">Try English or Japanese romanized titles (e.g. Godzilla, Dune, Solo Leveling).</p>
+    </div>
+    {% else %}
+    <div class="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      {% for item in items %}
+      <a href="{{ item.detail_href() }}" class="noth-media-card group flex flex-col">
+        <div class="noth-media-frame aspect-[2/3]">
+          <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="noth-media-img" />
+          <div class="absolute top-3 left-3 right-3 flex items-center justify-between">
+            <span class="rounded-full bg-black/80 border border-white/20 px-2.5 py-0.5 font-mono text-[10px] text-white">{{ item.badge_label() }}</span>
+            <span class="rounded-full bg-white text-black px-2 py-0.5 font-mono text-[10px] font-bold">★ {{ item.rating }}</span>
+          </div>
+        </div>
+        <div class="noth-media-meta">
+          <span class="truncate text-sm font-medium text-white group-hover:translate-x-1 transition-transform">{{ item.title }}</span>
+          <span class="font-mono text-[11px] text-neutral-500 shrink-0">{{ item.release_year }}</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
-  {% endif %}
 </div>
 {% endblock %}

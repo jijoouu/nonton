@@ -1,126 +1,666 @@
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap");
 
 :root {
-  --bg-obsidian: #09090b;
-  --bg-surface: #121216;
-  --accent-rose: #e11d48;
-  --accent-glow: rgba(225, 29, 72, 0.35);
+  --noth-white: #ffffff;
+  --noth-black: #000000;
+  --noth-grey: #8b8b84;
+  --noth-muted: #9a9a94;
+  --noth-neutral: #e3e1de;
+  --noth-hair: #d7d7d1;
+  --noth-hair-dark: rgba(255, 255, 255, 0.16);
+  --noth-indigo: #2500ad;
+  --noth-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --noth-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Selection — Noth.in Electric Indigo & Stark Contrast */
+::selection {
+  background-color: var(--noth-indigo);
+  color: var(--noth-white);
 }
 
 html {
-  background-color: var(--bg-obsidian);
-  color: #f4f4f5;
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
-  scroll-behavior: smooth;
+  background-color: var(--noth-black);
+  color: var(--noth-white);
+  font-family: "PP Neue Montreal", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  overscroll-behavior: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: auto;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden !important;
 }
 
 body {
-  background-color: var(--bg-obsidian);
+  background-color: var(--noth-black);
+  color: var(--noth-white);
   overflow-x: hidden;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .font-mono {
-  font-family: "JetBrains Mono", monospace;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* View Transitions API for Smooth Page Morphing */
-@view-transition {
-  navigation: auto;
+/* =========================================================
+   1. NOTH.IN SPLASH SCREEN / PRELOADER (.noth-loader)
+   ========================================================= */
+.noth-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background-color: #000000;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: clip-path 0.85s var(--noth-expo), opacity 0.55s var(--noth-ease), visibility 0.55s;
+  clip-path: inset(0 0 0 0);
+  will-change: clip-path, opacity;
 }
 
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 0.28s;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+.noth-loader.is-done {
+  clip-path: inset(0 0 100% 0);
+  pointer-events: none;
 }
 
-/* Keyframe Animations */
-@keyframes kenBurns {
+.noth-loader-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 1.8vw, 1.5rem);
+  user-select: none;
+}
+
+.noth-loader-char {
+  font-size: clamp(5.5rem, 15vw, 13rem);
+  font-weight: 700;
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+  color: #ffffff;
+  transform: translateY(0);
+  transition: transform 0.6s var(--noth-expo);
+}
+
+/* Glossy 3D Balloon-Sculpture Emblem in Center of N' */
+.noth-loader-sculpture {
+  position: relative;
+  width: clamp(4.5rem, 11vw, 9.5rem);
+  height: clamp(4.5rem, 11vw, 9.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: loaderFloat 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes loaderFloat {
   0% {
-    transform: scale(1);
+    transform: translateY(4px) rotate(-6deg) scale(0.96);
   }
   100% {
-    transform: scale(1.08);
+    transform: translateY(-6px) rotate(8deg) scale(1.04);
   }
 }
 
-@keyframes fadeSlideUp {
-  0% {
-    opacity: 0;
-    transform: translateY(18px);
+.noth-loader-counter-wrap {
+  position: absolute;
+  bottom: clamp(2rem, 4.5vh, 3.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.noth-loader-counter {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(0.85rem, 1.1vw, 1.05rem);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: #ffffff;
+}
+
+.noth-loader-sub {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--noth-muted);
+}
+
+/* =========================================================
+   2. FIXED HEADER & MENU (mix-blend-mode: difference)
+   ========================================================= */
+.noth-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: clamp(1.1rem, 2vw, 1.75rem) clamp(1.25rem, 2.8vw, 2.5rem);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  mix-blend-mode: difference;
+  color: #ffffff;
+  pointer-events: none;
+}
+
+.noth-header > * {
+  pointer-events: auto;
+}
+
+.noth-logo {
+  font-size: clamp(1.75rem, 2.6vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  color: #ffffff;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+.noth-logo-dot {
+  display: inline-block;
+  transition: transform 0.4s var(--noth-ease);
+}
+
+.noth-logo:hover .noth-logo-dot {
+  transform: translateY(-3px) rotate(15deg);
+}
+
+.noth-nav-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.noth-micro-link {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.15;
+  color: #ffffff;
+  text-decoration: none;
+  opacity: 0.72;
+  transition: opacity 0.2s ease, transform 0.2s var(--noth-ease);
+}
+
+.noth-micro-link:hover,
+.noth-micro-link.is-active {
+  opacity: 1;
+}
+
+.noth-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: transparent;
+  border: 0;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.noth-menu-svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.4s var(--noth-ease);
+}
+
+.noth-menu-trigger:hover .noth-menu-svg,
+.noth-menu-trigger.is-open .noth-menu-svg {
+  transform: rotate(45deg);
+}
+
+/* Language / Mode Pill Track (.nl-tg) */
+.noth-lang-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  padding: 5px 11px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.noth-lang-track {
+  width: 22px;
+  height: 11px;
+  border-radius: 10px;
+  background: #ffffff;
+  position: relative;
+  display: inline-block;
+}
+
+.noth-lang-knob {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #000000;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.25s ease;
+}
+
+.noth-lang-pill.is-en .noth-lang-knob {
+  transform: translateX(11px);
+}
+
+/* =========================================================
+   3. LINE-MASK REVEAL & EDITORIAL TYPOGRAPHY
+   ========================================================= */
+.line-mask {
+  overflow: clip;
+  padding-bottom: 0.15em;
+  margin-bottom: -0.15em;
+  display: block;
+}
+
+.line-child {
+  display: block;
+  transform: translateY(110%);
+  transition: transform 0.85s var(--noth-expo);
+  will-change: transform;
+}
+
+body.splash-ready .line-child {
+  transform: translateY(0%);
+}
+
+.delay-1 .line-child {
+  transition-delay: 0.08s;
+}
+.delay-2 .line-child {
+  transition-delay: 0.16s;
+}
+.delay-3 .line-child {
+  transition-delay: 0.24s;
+}
+.delay-4 .line-child {
+  transition-delay: 0.32s;
+}
+
+/* Parenthetical Editorial Tag: ( The Studio ) / ( 07 ) */
+.noth-paren {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--noth-muted);
+  letter-spacing: 0.04em;
+}
+
+/* =========================================================
+   4. NOTH.IN PILL BUTTONS (.noth-pill)
+   ========================================================= */
+.noth-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  border-radius: 100px;
+  padding: 14px 22px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.28s var(--noth-ease), color 0.28s var(--noth-ease), border-color 0.28s var(--noth-ease), transform 0.28s var(--noth-ease);
+}
+
+.noth-pill-dark {
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+}
+
+.noth-pill-dark:hover {
+  background-color: transparent;
+  color: #000000;
+}
+
+.noth-pill-outline-dark {
+  background-color: transparent;
+  color: #000000;
+  border: 1px solid #000000;
+}
+
+.noth-pill-outline-dark:hover {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.noth-pill-light {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #ffffff;
+}
+
+.noth-pill-light:hover {
+  background-color: transparent;
+  color: #ffffff;
+}
+
+.noth-pill-outline-light {
+  background-color: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.noth-pill-outline-light:hover {
+  background-color: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
+.noth-pill-arrow {
+  display: inline-block;
+  transition: transform 0.25s var(--noth-ease);
+}
+
+.noth-pill:hover .noth-pill-arrow {
+  transform: translateX(4px);
+}
+
+/* =========================================================
+   5. HERO STAGE (WHITE -> SHOWREEL ZOOM REVEAL)
+   ========================================================= */
+.noth-hero-stage {
+  background-color: #ffffff;
+  color: #000000;
+  position: relative;
+  padding: clamp(6.5rem, 11vh, 9rem) clamp(1.25rem, 2.8vw, 2.5rem) clamp(4rem, 8vh, 6rem);
+  overflow: hidden;
+}
+
+.noth-giant-wordmark {
+  font-size: clamp(4.4rem, 18.2vw, 22rem);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 0.82;
+  color: #000000;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+.noth-showreel-card {
+  position: relative;
+  width: 100%;
+  border-radius: clamp(16px, 2vw, 28px);
+  overflow: hidden;
+  background: #000000;
+  will-change: transform;
+}
+
+/* =========================================================
+   6. EDGE-TO-EDGE SPREAD LETTERS (W O R K S / A N I M E)
+   ========================================================= */
+.noth-spread-word {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  user-select: none;
+  padding: 0.5rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.noth-spread-char {
+  font-size: clamp(3.5rem, 11vw, 11.5rem);
+  font-weight: 700;
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+  text-transform: lowercase;
+  color: #ffffff;
+  display: inline-block;
+  will-change: transform;
+}
+
+/* =========================================================
+   7. ASYMMETRIC 6-COLUMN WORKS GRID (.work_list)
+   ========================================================= */
+.noth-work-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-flow: dense;
+  gap: clamp(1.5rem, 3.2vw, 3.5rem) clamp(1rem, 2vw, 2rem);
+  align-items: start;
+}
+
+/* Asymmetric column placements matching noth.in */
+.noth-col-full {
+  grid-column: 1 / 7;
+}
+.noth-col-right-4 {
+  grid-column: 3 / 7;
+}
+.noth-col-left-4 {
+  grid-column: 1 / 5;
+}
+.noth-col-left-3 {
+  grid-column: 1 / 4;
+}
+.noth-col-right-3 {
+  grid-column: 4 / 7;
+}
+.noth-col-mid-4 {
+  grid-column: 2 / 6;
+}
+
+@media (max-width: 768px) {
+  .noth-work-grid {
+    grid-template-columns: 1fr;
   }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
+  .noth-col-full,
+  .noth-col-right-4,
+  .noth-col-left-4,
+  .noth-col-left-3,
+  .noth-col-right-3,
+  .noth-col-mid-4 {
+    grid-column: 1 / -1;
   }
 }
 
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 25px -5px rgba(225, 29, 72, 0.45);
-  }
-  50% {
-    box-shadow: 0 0 38px 0px rgba(225, 29, 72, 0.75);
-  }
+/* Project / Media Card with Internal Parallax Image */
+.noth-media-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
 
-.animate-ken-burns {
-  animation: kenBurns 12s ease-out forwards;
+.noth-media-frame {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  background-color: #111111;
 }
 
-.animate-stagger-1 {
-  animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+.noth-media-img {
+  width: 100%;
+  height: 112%;
+  object-fit: cover;
+  transform: translate3d(0, -5%, 0) scale(1.01);
+  transition: transform 0.7s var(--noth-ease), filter 0.45s ease;
+  will-change: transform;
 }
 
-.animate-stagger-2 {
-  animation: fadeSlideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+.noth-media-card:hover .noth-media-img {
+  transform: translate3d(0, -2%, 0) scale(1.06);
 }
 
-.animate-stagger-3 {
-  animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+.noth-media-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding-bottom: 0.75rem;
 }
 
-.btn-glow {
-  animation: pulseGlow 3s infinite;
+/* =========================================================
+   8. GLITCH MANIFESTO & FLOATING 3D OBJECTS
+   ========================================================= */
+.noth-glitch-section {
+  position: relative;
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-/* 3D Poster Card Hover & Ambient Cinema Lighting */
+.noth-floating-obj {
+  will-change: transform;
+  transition: transform 0.1s linear;
+}
+
+/* =========================================================
+   9. FAQ ACCORDION (.faq3_accordion)
+   ========================================================= */
+.noth-faq-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  position: relative;
+}
+
+.noth-faq-line-active {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  height: 1px;
+  width: 0%;
+  background-color: #ffffff;
+  transition: width 0.55s var(--noth-expo);
+}
+
+.noth-faq-item.is-open .noth-faq-line-active {
+  width: 100%;
+}
+
+.noth-faq-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.65rem 0;
+  background: transparent;
+  border: 0;
+  color: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+}
+
+.noth-faq-item.is-open .noth-faq-btn,
+.noth-faq-btn:hover {
+  opacity: 1;
+}
+
+.noth-faq-icon {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: transform 0.35s var(--noth-ease);
+}
+
+.noth-faq-item.is-open .noth-faq-icon {
+  transform: rotate(45deg);
+}
+
+.noth-faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s var(--noth-expo), padding-bottom 0.4s ease;
+}
+
+.noth-faq-item.is-open .noth-faq-answer {
+  max-height: 260px;
+  padding-bottom: 1.5rem;
+}
+
+/* =========================================================
+   10. GIANT FOOTER SVG WORDMARK REVEAL
+   ========================================================= */
+.noth-footer-wordmark {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0.78;
+  padding-top: 2rem;
+  user-select: none;
+}
+
+.noth-footer-letter {
+  font-size: clamp(4.5rem, 18vw, 21rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  color: #ffffff;
+  display: inline-block;
+  transform-origin: bottom center;
+  will-change: transform;
+  transition: transform 0.65s var(--noth-expo);
+}
+
+/* Poster Card Compatibility for Subpages */
 .poster-card {
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.25s ease;
+  transition: transform 0.45s var(--noth-ease), border-color 0.3s ease;
   will-change: transform;
 }
 
 .poster-card:hover {
-  transform: translateY(-6px) scale(1.02);
-  border-color: rgba(225, 29, 72, 0.55);
-  box-shadow: 0 18px 38px -12px rgba(225, 29, 72, 0.32),
-    0 0 1px 1px rgba(225, 29, 72, 0.2);
-}
-
-.poster-card:hover .poster-img {
-  transform: scale(1.07);
+  transform: translateY(-6px);
+  border-color: #ffffff !important;
 }
 
 .poster-img {
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.65s var(--noth-ease);
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #09090b;
-}
-::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #e11d48;
+.poster-card:hover .poster-img {
+  transform: scale(1.06);
 }
 
 .no-scrollbar::-webkit-scrollbar {

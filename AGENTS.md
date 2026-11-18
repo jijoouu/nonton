@@ -16,7 +16,8 @@ Seluruh aplikasi dibangun menggunakan ekosistem **Rust** agar menghasilkan 1 fil
 - **Middleware:** `tower-http` (`ServeDir` untuk file statis + `CompressionLayer` Brotli & Gzip otomatis)
 - **Frontend Styling & Motion:**
   - Tailwind CSS + Custom Stylesheet (`static/css/cinema.css`)
-  - **Design System:** Obsidian Cinema Edition (Latar Gelap Pekat `#0A0D14` / `#05070A` dengan aksen Merah Bioskop `#E50914`, Glassmorphism, dan Tipografi Modern).
+  - **Design System (`noth.in` Edition):** Terinspirasi dari `https://www.noth.in` — kontras monokromatik murni (`#FFFFFF` Hero Stage & `#000000` Works Stage), header `mix-blend-mode: difference`, tipografi editorial (`PP Neue Montreal` / `Inter` + `IBM Plex Mono`), tag tanda kurung `( The Spotlight )`, tombol kapsul `.noth-pill`, dan **Asymmetric 6-Column Grid (`.noth-work-grid`)**.
+  - **Splash Screen & Scroll Choreography (`static/js/app.js`):** Preloader `N'` dengan 3D Balloon Sculpture dan counter `000 -> 100`, dipadukan dengan **Lenis Smooth Inertial Scroll**, *Hero Giant Wordmark Zoom-Through*, *Internal Card Image Parallax*, *Glitch Text-Scramble Manifesto*, dan *Monumental Scaling Footer*.
 - **State & Local Persistence:** Zero-Login `localStorage` Engine (`window.NontonStore` di `static/js/app.js`) untuk mengelola *Watchlist*, *Continue Watching History*, *Watched Episodes*, *Recent Searches*, dan *Export/Import JSON Backup*.
 
 ---

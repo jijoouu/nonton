@@ -1,10 +1,14 @@
 /**
- * Nonton Rust Engine — Zero-Framework Client Interactivity & Animations
- * Mengelola LocalStorage (Watchlist, History, Watched Episodes, Backup JSON),
- * Command Palette Search (Ctrl+K), Hero Carousel Auto-Slide, dan Player Controls.
+ * N' — Nonton Creative Streaming Engine (Inspired by noth.in)
+ * - Splash Screen Preloader (000 -> 100 counter + N' 3D Balloon Sculpture + Line-Mask Reveal)
+ * - Lenis Smooth Inertial Scroll + Scroll-Driven Wordmark Zoom, Image Parallax & 3D Rotation
+ * - Glitch Text-Scramble Manifesto Decoder
+ * - Zero-Login LocalStorage (Watchlist, Continue Watching, Watched Episodes, JSON Backup)
+ * - Instant Command Search (Ctrl+K)
  */
 
 const STORAGE_KEY = "nonton-user-storage-rust";
+const SPLASH_SESSION_KEY = "noth-splash-seen-v1";
 
 const NontonStore = {
   getState() {
@@ -73,7 +77,7 @@ const NontonStore = {
     if (!badge) return;
     const count = this.getState().watchlist.length;
     if (count > 0) {
-      badge.textContent = count;
+      badge.textContent = `(${count})`;
       badge.classList.remove("hidden");
     } else {
       badge.classList.add("hidden");
@@ -83,14 +87,243 @@ const NontonStore = {
 
 window.NontonStore = NontonStore;
 
+let lenisInstance = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   NontonStore.updateNavbarBadge();
+  initNothSplashLoader(false);
+  initLenisAndScrollChoreography();
+  initNothMenuDrawer();
+  initGlitchTextScramble();
   initSearchModal();
   initHeroCarousel();
   initContinueWatchingRow();
   initWatchlistButtons();
 });
 
+/* =========================================================
+   1. NOTH.IN SPLASH SCREEN / PRELOADER (000 -> 100)
+   ========================================================= */
+function initNothSplashLoader(forceFull = false) {
+  const loader = document.getElementById("noth-loader");
+  const counterEl = document.getElementById("noth-loader-number");
+  const htmlEl = document.documentElement;
+
+  if (!loader || !counterEl) {
+    document.body.classList.add("splash-ready");
+    htmlEl.classList.remove("lenis-stopped");
+    return;
+  }
+
+  const isHomePage = window.location.pathname === "/";
+  const alreadySeen = sessionStorage.getItem(SPLASH_SESSION_KEY) === "1";
+  const duration = forceFull || isHomePage || !alreadySeen ? 1350 : 380;
+
+  loader.classList.remove("is-done");
+  document.body.classList.remove("splash-ready");
+  htmlEl.classList.add("lenis-stopped");
+  if (lenisInstance) lenisInstance.stop();
+
+  const startTime = performance.now();
+
+  function tick(now) {
+    const elapsed = now - startTime;
+    const rawProgress = Math.min(1, elapsed / duration);
+    // Ease out cubic for authentic noth.in counter cadence (000 -> 043 -> 070 -> 100)
+    const eased = 1 - Math.pow(1 - rawProgress, 3);
+    const currentNum = Math.floor(eased * 100);
+
+    counterEl.textContent = String(currentNum).padStart(3, "0");
+
+    if (rawProgress < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      counterEl.textContent = "100";
+      sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
+      setTimeout(() => {
+        loader.classList.add("is-done");
+        htmlEl.classList.remove("lenis-stopped");
+        document.body.classList.add("splash-ready");
+        if (lenisInstance) lenisInstance.start();
+      }, 140);
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+window.replayNothSplash = function () {
+  const drawer = document.getElementById("noth-menu-drawer");
+  const menuBtn = document.getElementById("noth-menu-btn");
+  if (drawer && !drawer.classList.contains("hidden")) {
+    drawer.classList.add("hidden");
+    drawer.classList.remove("flex");
+    if (menuBtn) menuBtn.classList.remove("is-open");
+  }
+  window.scrollTo({ top: 0, behavior: "instant" });
+  initNothSplashLoader(true);
+};
+
+/* =========================================================
+   2. LENIS SMOOTH INERTIAL SCROLL & PARALLAX CHOREOGRAPHY
+   ========================================================= */
+function initLenisAndScrollChoreography() {
+  if (typeof window.Lenis !== "undefined") {
+    lenisInstance = new window.Lenis({
+      lerp: 0.09,
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+    });
+
+    function raf(time) {
+      lenisInstance.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+  }
+
+  const wordmark = document.getElementById("hero-zoom-wordmark");
+  const showreelCard = document.getElementById("hero-showreel-card");
+  const parallaxImgs = document.querySelectorAll("[data-parallax-img]");
+  const rotateObjs = document.querySelectorAll("[data-scroll-rotate]");
+  const footerWordmark = document.querySelector("[data-footer-wordmark]");
+  const footerLetters = footerWordmark
+    ? footerWordmark.querySelectorAll(".noth-footer-letter")
+    : [];
+
+  function updateScrollTransforms() {
+    const scrollY = window.scrollY || window.pageYOffset;
+    const vh = window.innerHeight || 900;
+
+    // 1. Hero Giant NONTON' Wordmark Zoom-Through on Scroll
+    if (wordmark) {
+      const progress = Math.min(1, Math.max(0, scrollY / (vh * 0.75)));
+      const scale = 1 + progress * 1.45;
+      const translateY = progress * 42;
+      const opacity = Math.max(0.08, 1 - progress * 0.85);
+      wordmark.style.transform = `translate3d(0, ${translateY}px, 0) scale(${scale.toFixed(3)})`;
+      wordmark.style.opacity = opacity.toFixed(3);
+    }
+
+    // 2. Showreel Card Subtle Expand on Scroll
+    if (showreelCard) {
+      const rect = showreelCard.getBoundingClientRect();
+      const centerProgress = Math.min(1, Math.max(0, (vh - rect.top) / (vh * 0.85)));
+      const cardScale = 0.94 + centerProgress * 0.06;
+      showreelCard.style.transform = `scale(${cardScale.toFixed(3)})`;
+    }
+
+    // 3. Internal Image Parallax inside Asymmetric Cards (.work_list)
+    parallaxImgs.forEach((img) => {
+      const frame = img.parentElement;
+      if (!frame) return;
+      const rect = frame.getBoundingClientRect();
+      if (rect.bottom < 0 || rect.top > vh) return;
+      const ratio = (rect.top + rect.height * 0.5 - vh * 0.5) / vh;
+      const shiftY = Math.max(-10, Math.min(10, ratio * -14));
+      img.style.transform = `translate3d(0, ${shiftY.toFixed(2)}%, 0) scale(1.04)`;
+    });
+
+    // 4. Floating 3D Objects Continuous Scroll Rotation
+    rotateObjs.forEach((obj) => {
+      const speed = parseFloat(obj.dataset.scrollRotate || "0.2");
+      const deg = scrollY * speed;
+      obj.style.transform = `rotate(${deg.toFixed(1)}deg)`;
+    });
+
+    // 5. Giant Footer Letters Independent Scale Reveal
+    if (footerWordmark && footerLetters.length > 0) {
+      const rect = footerWordmark.getBoundingClientRect();
+      const visibleRatio = Math.min(1, Math.max(0, (vh - rect.top) / (rect.height + vh * 0.25)));
+      footerLetters.forEach((letter, idx) => {
+        const stagger = idx * 0.05;
+        const localP = Math.min(1, Math.max(0.15, (visibleRatio - stagger) / (1 - stagger)));
+        letter.style.transform = `scaleY(${localP.toFixed(3)})`;
+      });
+    }
+  }
+
+  window.addEventListener("scroll", updateScrollTransforms, { passive: true });
+  window.addEventListener("resize", updateScrollTransforms);
+  updateScrollTransforms();
+}
+
+/* =========================================================
+   3. NOTH.IN MENU DRAWER TOGGLE
+   ========================================================= */
+function initNothMenuDrawer() {
+  const btn = document.getElementById("noth-menu-btn");
+  const drawer = document.getElementById("noth-menu-drawer");
+  if (!btn || !drawer) return;
+
+  btn.addEventListener("click", () => {
+    const isHidden = drawer.classList.contains("hidden");
+    if (isHidden) {
+      drawer.classList.remove("hidden");
+      drawer.classList.add("flex");
+      btn.classList.add("is-open");
+    } else {
+      drawer.classList.add("hidden");
+      drawer.classList.remove("flex");
+      btn.classList.remove("is-open");
+    }
+  });
+}
+
+/* =========================================================
+   4. GLITCH TEXT-SCRAMBLE MANIFESTO DECODER
+   ========================================================= */
+function initGlitchTextScramble() {
+  const el = document.getElementById("noth-glitch-manifesto");
+  if (!el) return;
+
+  const finalText = el.dataset.glitchTarget || el.textContent.trim();
+  const glyphs = "Pj(è!?”U§hs·01/_[]{}*#@%&";
+  let isAnimating = false;
+
+  const triggerScramble = () => {
+    if (isAnimating) return;
+    isAnimating = true;
+    let iteration = 0;
+    const totalSteps = finalText.length;
+
+    const interval = setInterval(() => {
+      el.textContent = finalText
+        .split("")
+        .map((char, idx) => {
+          if (char === " ") return " ";
+          if (idx < iteration) return finalText[idx];
+          return glyphs[Math.floor(Math.random() * glyphs.length)];
+        })
+        .join("");
+
+      iteration += 1.6;
+      if (iteration >= totalSteps) {
+        el.textContent = finalText;
+        clearInterval(interval);
+        isAnimating = false;
+      }
+    }, 24);
+  };
+
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            triggerScramble();
+          }
+        });
+      },
+      { threshold: 0.35 }
+    );
+    observer.observe(el);
+  }
+}
+
+/* =========================================================
+   5. INSTANT COMMAND SEARCH MODAL (CTRL + K)
+   ========================================================= */
 function initSearchModal() {
   const modal = document.getElementById("search-modal");
   const openBtn = document.getElementById("open-search-btn");
@@ -130,53 +363,56 @@ function initSearchModal() {
       clearTimeout(timer);
       const q = input.value.trim();
       if (q.length < 2) {
-        resultsBox.innerHTML = `<div class="py-8 text-center text-xs text-zinc-400">Ketik minimal 2 huruf untuk mencari Film, Serial TV, dan Anime secara instan...</div>`;
+        resultsBox.innerHTML = `<div class="py-10 text-center font-mono text-xs text-neutral-500">( Type at least 2 characters to search Movies, Series & Anime )</div>`;
         return;
       }
-      resultsBox.innerHTML = `<div class="py-8 text-center text-xs text-rose-400 animate-pulse">Mencari "${q}" di engine Rust...</div>`;
+      resultsBox.innerHTML = `<div class="py-10 text-center font-mono text-xs text-white animate-pulse">( SEARCHING "${q.toUpperCase()}" IN RUST INDEX... )</div>`;
       timer = setTimeout(async () => {
         try {
           const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
           const data = await res.json();
           if (!data.results || data.results.length === 0) {
-            resultsBox.innerHTML = `<div class="py-8 text-center text-xs text-zinc-400">Tidak ada hasil untuk "${q}".</div>`;
+            resultsBox.innerHTML = `<div class="py-10 text-center font-mono text-xs text-neutral-500">( NO WORKS FOUND FOR "${q.toUpperCase()}" )</div>`;
             return;
           }
           resultsBox.innerHTML =
-            `<a href="/search?q=${encodeURIComponent(q)}" class="flex items-center justify-between rounded-xl border border-rose-500/40 bg-rose-500/15 px-3.5 py-2.5 text-xs font-bold text-rose-300 hover:bg-rose-500/25 transition-colors">
-              <span>🔎 Lihat semua hasil lengkap untuk "${q}" (Film, K-Drama & Anime)</span>
-              <span class="font-mono">Enter ↵</span>
+            `<a href="/search?q=${encodeURIComponent(q)}" class="flex items-center justify-between rounded-full border border-white/30 bg-white text-black px-5 py-3 text-xs font-mono font-bold uppercase hover:bg-neutral-200 transition-colors">
+              <span>VIEW FULL INDEX RESULTS FOR "${q}"</span>
+              <span>ENTER ↵</span>
             </a>` +
             data.results
               .map(
                 (item) => `
-              <div class="flex items-center justify-between gap-3 rounded-xl bg-zinc-900/70 border border-white/5 p-2.5 hover:border-rose-500/40 hover:bg-zinc-900 transition-all">
-                <a href="/${item.media_type}/${item.id}" class="flex items-center gap-3 flex-1 min-w-0">
-                  <img src="${item.poster_url}" alt="${item.title}" class="h-14 w-10 rounded-lg object-cover shrink-0 bg-zinc-800" />
+              <div class="flex items-center justify-between gap-4 rounded-2xl border border-white/15 bg-neutral-950 p-3 hover:border-white transition-all">
+                <a href="/${item.media_type}/${item.id}" class="flex items-center gap-3.5 flex-1 min-w-0">
+                  <img src="${item.poster_url}" alt="${item.title}" class="h-14 w-10 rounded-lg object-cover shrink-0 bg-neutral-900" />
                   <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2">
-                      <span class="rounded bg-rose-500/20 border border-rose-500/40 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-rose-300">${item.media_type}</span>
-                      <span class="font-mono text-xs text-amber-400">★ ${item.rating}</span>
-                      <span class="font-mono text-xs text-zinc-400">${item.release_year}</span>
+                    <div class="flex items-center gap-2 font-mono text-[11px] text-neutral-400">
+                      <span class="uppercase text-white">(${item.media_type})</span>
+                      <span>★ ${item.rating}</span>
+                      <span>· ${item.release_year}</span>
                     </div>
-                    <h4 class="text-sm font-bold text-white truncate mt-0.5">${item.title}</h4>
+                    <h4 class="text-sm font-medium text-white truncate mt-0.5">${item.title}</h4>
                   </div>
                 </a>
-                <a href="${item.media_type === "movie" ? `/watch/movie/${item.id}` : item.media_type === "tv" ? `/watch/tv/${item.id}/1/1` : `/watch/anime/${item.id}/1`}" class="rounded-lg bg-rose-600 px-3 py-2 text-xs font-bold text-white hover:bg-rose-500 shrink-0">
-                  ▶ Tonton
+                <a href="${item.media_type === "movie" ? `/watch/movie/${item.id}` : item.media_type === "tv" ? `/watch/tv/${item.id}/1/1` : `/watch/anime/${item.id}/1`}" class="noth-pill noth-pill-outline-light !py-2 !px-4 !text-[10px] shrink-0">
+                  <span>WATCH →</span>
                 </a>
               </div>
             `
               )
               .join("");
         } catch {
-          resultsBox.innerHTML = `<div class="py-8 text-center text-xs text-rose-400">Gagal memuat pencarian.</div>`;
+          resultsBox.innerHTML = `<div class="py-10 text-center font-mono text-xs text-neutral-400">( ERROR FETCHING SEARCH INDEX )</div>`;
         }
       }, 220);
     });
   }
 }
 
+/* =========================================================
+   6. HERO SPOTLIGHT CAROUSEL & CONTINUE WATCHING
+   ========================================================= */
 function initHeroCarousel() {
   const slides = document.querySelectorAll("[data-hero-slide]");
   const dots = document.querySelectorAll("[data-hero-dot]");
@@ -193,9 +429,9 @@ function initHeroCarousel() {
     });
     dots.forEach((d, i) => {
       if (i === idx) {
-        d.className = "h-1.5 w-8 rounded-full bg-rose-500 transition-all";
+        d.className = "h-2 w-8 rounded-full bg-white transition-all";
       } else {
-        d.className = "h-1.5 w-2 rounded-full bg-white/30 hover:bg-white/60 transition-all";
+        d.className = "h-2 w-2 rounded-full bg-white/35 hover:bg-white/60 transition-all";
       }
     });
     current = idx;
@@ -234,26 +470,23 @@ function initContinueWatchingRow() {
             : `/watch/anime/${item.id}/${item.episode || 1}`;
         const label =
           item.media_type === "movie"
-            ? "Full Movie"
+            ? "MOVIE"
             : item.media_type === "tv"
-            ? `S${item.season || 1} • Ep ${item.episode || 1}`
-            : `Episode ${item.episode || 1}`;
+            ? `S${item.season || 1} · EP ${item.episode || 1}`
+            : `EPISODE ${item.episode || 1}`;
 
         return `
-          <a href="${href}" class="poster-card group relative w-[260px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-zinc-900/80 block">
-            <div class="relative aspect-video w-full overflow-hidden bg-zinc-950">
-              <img src="${item.backdrop_url || item.poster_url}" alt="${item.title}" class="poster-img h-full w-full object-cover" />
-              <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent"></div>
-              <div class="absolute bottom-2 left-3 right-3 flex items-center justify-between font-mono text-xs text-zinc-200">
-                <span>${label}</span>
-                <span class="text-rose-400 font-bold">Lanjut →</span>
-              </div>
-              <div class="absolute bottom-0 inset-x-0 h-1 bg-zinc-800">
-                <div class="h-full w-2/3 bg-rose-500"></div>
+          <a href="${href}" class="noth-media-card group w-[280px] shrink-0 block">
+            <div class="noth-media-frame aspect-video border border-white/15">
+              <img src="${item.backdrop_url || item.poster_url}" alt="${item.title}" class="noth-media-img" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent"></div>
+              <div class="absolute bottom-3 left-3.5 right-3.5 flex items-center justify-between font-mono text-[11px] text-white">
+                <span>( ${label} )</span>
+                <span>RESUME →</span>
               </div>
             </div>
-            <div class="p-3">
-              <h4 class="truncate text-sm font-bold text-white group-hover:text-rose-400">${item.title}</h4>
+            <div class="noth-media-meta">
+              <h4 class="truncate text-sm font-medium text-white group-hover:translate-x-1 transition-transform">${item.title}</h4>
             </div>
           </a>
         `;
@@ -286,7 +519,7 @@ function initWatchlistButtons() {
 
     const updateLabel = () => {
       const saved = NontonStore.isInWatchlist(item.id, item.media_type);
-      btn.textContent = saved ? "✓ Tersimpan di Watchlist" : "+ Watchlist";
+      btn.textContent = saved ? "✓ IN WATCHLIST" : "+ WATCHLIST";
     };
 
     updateLabel();
