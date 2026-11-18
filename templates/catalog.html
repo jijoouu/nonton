@@ -37,7 +37,7 @@
           <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="noth-media-img" />
           <div class="absolute top-3 left-3 right-3 flex items-center justify-between">
             <span class="rounded-full bg-black/80 border border-white/20 px-2.5 py-0.5 font-mono text-[10px] text-white">{{ item.badge_label() }}</span>
-            <span class="rounded-full bg-white text-black px-2 py-0.5 font-mono text-[10px] font-bold">★ {{ item.rating }}</span>
+            <span class="rounded-full bg-white text-black px-2 py-0.5 font-mono text-[10px] font-bold">{{ item.rating }}</span>
           </div>
         </div>
         <div class="noth-media-meta">

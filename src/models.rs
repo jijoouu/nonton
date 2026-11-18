@@ -16,6 +16,37 @@ pub struct SeasonInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RelatedSeasonItem {
+    pub id: String,
+    pub season_number: u32,
+    pub media_type: String,
+    pub title: String,
+    pub poster_url: String,
+    pub release_year: String,
+    pub total_episodes: u32,
+    pub rating: String,
+    pub relation_label: String,
+    pub is_current: bool,
+}
+
+impl RelatedSeasonItem {
+    pub fn watch_href(&self) -> String {
+        match self.media_type.as_str() {
+            "movie" => format!("/watch/movie/{}", self.id),
+            "tv" => format!("/watch/tv/{}/{}/1", self.id, self.season_number.max(1)),
+            _ => format!("/watch/anime/{}/1", self.id),
+        }
+    }
+
+    pub fn detail_href(&self) -> String {
+        match self.media_type.as_str() {
+            "tv" => format!("/tv/{}?season={}", self.id, self.season_number.max(1)),
+            _ => format!("/{}/{}", self.media_type, self.id),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UnifiedMedia {
     pub id: String,
     pub mal_id: Option<u32>,
@@ -36,6 +67,7 @@ pub struct UnifiedMedia {
     pub next_airing_label: Option<String>,
     pub cast: Vec<CastMember>,
     pub seasons: Vec<SeasonInfo>,
+    pub related_seasons: Vec<RelatedSeasonItem>,
     pub recommendations: Vec<UnifiedMedia>,
 }
 

@@ -1,7 +1,7 @@
 use reqwest::Client;
 use serde_json::{json, Value};
 
-use crate::models::{CastMember, ScheduleItem, SeasonInfo, UnifiedMedia};
+use crate::models::{CastMember, RelatedSeasonItem, ScheduleItem, SeasonInfo, UnifiedMedia};
 
 const ONESHOWS_API: &str = "https://www.1shows.org/api";
 
@@ -126,6 +126,40 @@ impl ApiClient {
             studios(isMain: true) { nodes { name } }
             trailer { id site }
             nextAiringEpisode { episode airingAt timeUntilAiring }
+            relations {
+              edges {
+                relationType(version: 2)
+                node {
+                  id
+                  idMal
+                  type
+                  format
+                  title { romaji english }
+                  coverImage { extraLarge large }
+                  averageScore
+                  seasonYear
+                  startDate { year }
+                  episodes
+                  relations {
+                    edges {
+                      relationType(version: 2)
+                      node {
+                        id
+                        idMal
+                        type
+                        format
+                        title { romaji english }
+                        coverImage { extraLarge large }
+                        averageScore
+                        seasonYear
+                        startDate { year }
+                        episodes
+                      }
+                    }
+                  }
+                }
+              }
+            }
             characters(sort: [ROLE, RELEVANCE], perPage: 10) {
               edges {
                 role
@@ -136,7 +170,7 @@ impl ApiClient {
                 }
               }
             }
-            recommendations(sort: RATING_DESC, perPage: 8) {
+            recommendations(sort: RATING_DESC, perPage: 10) {
               nodes {
                 mediaRecommendation {
                   id
@@ -168,7 +202,63 @@ impl ApiClient {
             if let Ok(body) = resp.json::<Value>().await {
                 if let Some(media_val) = body.pointer("/data/Media") {
                     if !media_val.is_null() {
-                        return parse_anilist_media(media_val);
+                        let mut media = parse_anilist_media(media_val);
+
+                        // If this anime belongs to a multi-season franchise (like JoJo's Bizarre Adventure),
+                        // also fetch any other seasons matching the franchise root name so ALL seasons appear in order!
+                        if let Some(root_prefix) = extract_franchise_root(&media.title)
+                            .or_else(|| extract_franchise_root(&media.original_title))
+                        {
+                            let franchise_list = self
+                                .discover_anime(Some(&root_prefix), None, None, "START_DATE", 18)
+                                .await;
+                            let root_low = root_prefix.to_lowercase();
+                            for item in franchise_list {
+                                let t_low = item.title.to_lowercase();
+                                let o_low = item.original_title.to_lowercase();
+                                if (t_low.contains(&root_low) || o_low.contains(&root_low))
+                                    && !media.related_seasons.iter().any(|r| r.id == item.id)
+                                {
+                                    let is_curr = item.id == media.id;
+                                    let cur_year: i32 = media.release_year.parse().unwrap_or(2020);
+                                    let item_year: i32 = item.release_year.parse().unwrap_or(2020);
+                                    let rel_label = if is_curr {
+                                        "CURRENT".to_string()
+                                    } else if item.total_episodes == 1 {
+                                        "MOVIE / OVA".to_string()
+                                    } else if item_year < cur_year {
+                                        "PREVIOUS SEASON".to_string()
+                                    } else if item_year > cur_year {
+                                        "NEXT SEASON".to_string()
+                                    } else {
+                                        "SERIES".to_string()
+                                    };
+                                    media.related_seasons.push(RelatedSeasonItem {
+                                        id: item.id,
+                                        season_number: 1,
+                                        media_type: "anime".into(),
+                                        title: item.title,
+                                        poster_url: item.poster_url,
+                                        release_year: item.release_year,
+                                        total_episodes: item.total_episodes,
+                                        rating: item.rating,
+                                        relation_label: rel_label,
+                                        is_current: is_curr,
+                                    });
+                                }
+                            }
+                            media.related_seasons.sort_by(|a, b| {
+                                let ya: i32 = a.release_year.parse().unwrap_or(9999);
+                                let yb: i32 = b.release_year.parse().unwrap_or(9999);
+                                ya.cmp(&yb).then_with(|| {
+                                    let ia: i64 = a.id.parse().unwrap_or(0);
+                                    let ib: i64 = b.id.parse().unwrap_or(0);
+                                    ia.cmp(&ib)
+                                })
+                            });
+                        }
+
+                        return media;
                     }
                 }
             }
@@ -178,6 +268,108 @@ impl ApiClient {
             .into_iter()
             .find(|a| a.id == id)
             .unwrap_or_else(|| fallback_anime_list().remove(0))
+    }
+
+    /// Resolve an AniList Anime into its corresponding TMDB (tmdb_id, season_number, is_movie)
+    /// so anime can stream on the exact same high-speed 4K servers (VidFast, VidLink TV, Vidy, VidZee) as Movies & K-Drama.
+    pub async fn resolve_anime_tmdb(&self, media: &UnifiedMedia) -> (String, u32, bool) {
+        let known = match media.id.as_str() {
+            "21" => Some(("37854", 1, false)),       // One Piece
+            "14719" => Some(("45790", 1, false)),    // JoJo's Bizarre Adventure (2012) S1
+            "20474" => Some(("45790", 2, false)),    // JoJo's Bizarre Adventure: Stardust Crusaders
+            "20799" => Some(("45790", 2, false)),    // JoJo's Bizarre Adventure: Stardust Crusaders - Battle in Egypt
+            "21450" => Some(("45790", 3, false)),    // JoJo's Bizarre Adventure: Diamond is Unbreakable
+            "102883" => Some(("45790", 4, false)),   // JoJo's Bizarre Adventure: Golden Wind
+            "131942" | "146722" | "153359" => Some(("45790", 5, false)), // JoJo's Bizarre Adventure: Stone Ocean
+            "151807" => Some(("127532", 1, false)),  // Solo Leveling S1
+            "176496" => Some(("127532", 2, false)),  // Solo Leveling S2
+            "154587" => Some(("209867", 1, false)),  // Frieren: Beyond Journey's End
+            "171018" => Some(("240411", 1, false)),  // DAN DA DAN
+            "185660" => Some(("240411", 2, false)),  // DAN DA DAN S2
+            "113415" => Some(("95479", 1, false)),   // Jujutsu Kaisen S1
+            "145064" => Some(("95479", 2, false)),   // Jujutsu Kaisen S2
+            "101922" => Some(("85937", 1, false)),   // Demon Slayer S1
+            "142329" => Some(("85937", 2, false)),   // Demon Slayer S2
+            "145139" => Some(("85937", 3, false)),   // Demon Slayer S3
+            "166240" => Some(("85937", 4, false)),   // Demon Slayer S4
+            "161645" => Some(("220542", 1, false)),  // The Apothecary Diaries S1
+            "176301" => Some(("220542", 2, false)),  // The Apothecary Diaries S2
+            "177709" => Some(("244479", 1, false)),  // SAKAMOTO DAYS
+            "170083" => Some(("240413", 1, false)),  // Dragon Ball DAIMA
+            "137822" => Some(("131041", 1, false)),  // BLUELOCK S1
+            "163146" => Some(("131041", 2, false)),  // BLUELOCK S2
+            "153288" => Some(("207468", 1, false)),  // Kaiju No. 8
+            "127230" => Some(("114410", 1, false)),  // Chainsaw Man
+            "16498" => Some(("1429", 1, false)),     // Attack on Titan
+            "20" => Some(("46260", 1, false)),       // Naruto
+            "1735" => Some(("31910", 1, false)),     // Naruto Shippuden
+            "269" => Some(("30984", 1, false)),      // Bleach
+            "116674" | "159322" | "170943" => Some(("30984", 2, false)), // Bleach TYBW
+            "140960" => Some(("120089", 1, false)),  // SPY x FAMILY
+            "151970" => Some(("206469", 1, false)),  // Shangri-La Frontier S1
+            "169559" => Some(("206469", 2, false)),  // Shangri-La Frontier S2
+            "150672" => Some(("203737", 1, false)),  // Oshi no Ko S1
+            "166531" => Some(("203737", 2, false)),  // Oshi no Ko S2
+            "151801" => Some(("204832", 1, false)),  // MASHLE S1
+            "166610" => Some(("204832", 2, false)),  // MASHLE S2
+            "21459" => Some(("65930", 1, false)),    // My Hero Academia
+            "11061" => Some(("46298", 1, false)),    // Hunter x Hunter (2011)
+            "1535" => Some(("13916", 1, false)),     // Death Note
+            "97940" => Some(("73223", 1, false)),    // Black Clover
+            "21355" => Some(("65942", 1, false)),    // Re:ZERO S1
+            "163134" => Some(("65942", 3, false)),   // Re:ZERO S3
+            "170942" => Some(("239770", 1, false)),  // Blue Box (Ao no Hako)
+            "163270" => Some(("223500", 1, false)),  // WIND BREAKER
+            "105333" => Some(("86031", 1, false)),   // Dr. STONE
+            "172019" => Some(("86031", 4, false)),   // Dr. STONE Science Future
+            _ => None,
+        };
+
+        if let Some((tid, season, is_movie)) = known {
+            return (tid.to_string(), season, is_movie);
+        }
+
+        let detected_season = detect_anime_season(&media.title)
+            .or_else(|| detect_anime_season(&media.original_title))
+            .unwrap_or(1);
+
+        let is_likely_movie = media.total_episodes <= 1 && media.duration >= 55;
+
+        let mut candidates = vec![
+            clean_anime_title(&media.title),
+            clean_anime_title(&media.original_title),
+        ];
+        if let Some((base, _)) = media.title.split_once(':') {
+            candidates.push(clean_anime_title(base));
+        }
+        if let Some((base, _)) = media.original_title.split_once(':') {
+            candidates.push(clean_anime_title(base));
+        }
+
+        for q in candidates {
+            if q.trim().len() < 2 {
+                continue;
+            }
+            let results = self.search_tmdb_multi(&q).await;
+            if results.is_empty() {
+                continue;
+            }
+            let target_type = if is_likely_movie { "movie" } else { "tv" };
+            if let Some(matched) = results
+                .iter()
+                .find(|r| r.media_type == target_type)
+                .or_else(|| results.first())
+            {
+                return (
+                    matched.id.clone(),
+                    detected_season,
+                    matched.media_type == "movie",
+                );
+            }
+        }
+
+        // Default fallback to Solo Leveling TMDB ID if completely offline
+        ("127532".to_string(), 1, false)
     }
 
     pub async fn get_weekly_schedule(&self) -> Vec<ScheduleItem> {
@@ -282,14 +474,12 @@ impl ApiClient {
 
         let (mut tmdb_items, anime_items) = tokio::join!(tmdb_fut, anime_fut);
 
-        // Combine TMDB (Movies, TV, Drakor) first, then Anime
+        // Combine Anime (with per-season entries) and TMDB (Movies, TV, Drakor)
         let mut combined = Vec::with_capacity(tmdb_items.len() + anime_items.len());
-        combined.append(&mut tmdb_items);
         for a in anime_items {
-            if !combined.iter().any(|x| x.title.eq_ignore_ascii_case(&a.title)) {
-                combined.push(a);
-            }
+            combined.push(a);
         }
+        combined.append(&mut tmdb_items);
         combined
     }
 
@@ -463,7 +653,12 @@ impl ApiClient {
         {
             if let Ok(body) = resp.json::<Value>().await {
                 if body.get("id").is_some() {
-                    return parse_tmdb_json(&body, "movie");
+                    let mut m = parse_tmdb_json(&body, "movie");
+                    if m.recommendations.is_empty() {
+                        let trending = self.discover_movies(m.genres.first().map(|s| s.as_str()), None).await;
+                        m.recommendations = trending.into_iter().filter(|x| x.id != m.id).take(8).collect();
+                    }
+                    return m;
                 }
             }
         }
@@ -490,7 +685,12 @@ impl ApiClient {
         {
             if let Ok(body) = resp.json::<Value>().await {
                 if body.get("id").is_some() {
-                    return parse_tmdb_json(&body, "tv");
+                    let mut tv = parse_tmdb_json(&body, "tv");
+                    if tv.recommendations.is_empty() {
+                        let trending = self.discover_tv(tv.genres.first().map(|s| s.as_str()), None).await;
+                        tv.recommendations = trending.into_iter().filter(|x| x.id != tv.id).take(8).collect();
+                    }
+                    return tv;
                 }
             }
         }
@@ -519,6 +719,53 @@ fn urlencoding(s: &str) -> String {
         }
     }
     out
+}
+
+fn detect_anime_season(title: &str) -> Option<u32> {
+    let low = title.to_lowercase();
+    if low.contains("season 4") || low.contains("4th season") {
+        Some(4)
+    } else if low.contains("season 3") || low.contains("3rd season") {
+        Some(3)
+    } else if low.contains("season 2") || low.contains("2nd season") || low.contains("part 2") {
+        Some(2)
+    } else {
+        None
+    }
+}
+
+fn clean_anime_title(title: &str) -> String {
+    let mut s = title.to_string();
+    for pat in [
+        "Season 2",
+        "Season 3",
+        "Season 4",
+        "2nd Season",
+        "3rd Season",
+        "4th Season",
+        "Part 2",
+        "-Arise from the Shadow-",
+    ] {
+        s = s.replace(pat, "");
+    }
+    if let Some((left, _)) = s.split_once(" -") {
+        s = left.to_string();
+    }
+    s.trim().to_string()
+}
+
+fn extract_franchise_root(title: &str) -> Option<String> {
+    let base = title
+        .split([':', '–', '—'])
+        .next()
+        .unwrap_or(title)
+        .trim();
+    let cleaned = clean_anime_title(base);
+    if cleaned.len() >= 4 {
+        Some(cleaned)
+    } else {
+        None
+    }
 }
 
 fn genre_name_to_tmdb_id(name: &str) -> Option<u32> {
@@ -663,6 +910,74 @@ fn parse_tmdb_json(v: &Value, media_type: &str) -> UnifiedMedia {
         .unwrap_or("Global Cinema Network")
         .to_string();
 
+    let mut related_seasons: Vec<RelatedSeasonItem> = Vec::new();
+    let seasons: Vec<SeasonInfo> = v
+        .get("seasons")
+        .and_then(|x| x.as_array())
+        .map(|arr| {
+            let valid_seasons: Vec<&Value> = arr
+                .iter()
+                .filter(|s| {
+                    let snum = s.get("season_number").and_then(|n| n.as_u64()).unwrap_or(0);
+                    let ep_cnt = s.get("episode_count").and_then(|e| e.as_u64()).unwrap_or(0);
+                    snum > 0 && ep_cnt > 0
+                })
+                .collect();
+
+            let has_multiple = valid_seasons.len() > 1;
+            let mut out = Vec::new();
+
+            for s in valid_seasons {
+                let snum = s.get("season_number").and_then(|n| n.as_u64()).unwrap_or(1) as u32;
+                let ep_cnt = s.get("episode_count").and_then(|e| e.as_u64()).unwrap_or(12) as u32;
+                let name = s
+                    .get("name")
+                    .and_then(|n| n.as_str())
+                    .map(String::from)
+                    .unwrap_or_else(|| format!("Season {}", snum));
+
+                if has_multiple {
+                    let s_poster = s
+                        .get("poster_path")
+                        .and_then(|p| p.as_str())
+                        .map(|p| format!("https://image.tmdb.org/t/p/w500{}", p))
+                        .unwrap_or_else(|| poster_url.clone());
+                    let s_year = s
+                        .get("air_date")
+                        .and_then(|d| d.as_str())
+                        .map(|d| d.chars().take(4).collect::<String>())
+                        .filter(|y| !y.is_empty())
+                        .unwrap_or_else(|| release_year.clone());
+                    let display_title = if name.to_lowercase().starts_with("season") {
+                        format!("{} — {}", title, name)
+                    } else {
+                        format!("S{}: {}", snum, name)
+                    };
+
+                    related_seasons.push(RelatedSeasonItem {
+                        id: id.clone(),
+                        season_number: snum,
+                        media_type: "tv".into(),
+                        title: display_title,
+                        poster_url: s_poster,
+                        release_year: s_year,
+                        total_episodes: ep_cnt,
+                        rating: format!("{:.1}", rating_num),
+                        relation_label: format!("SEASON {}", snum),
+                        is_current: snum == 1,
+                    });
+                }
+
+                out.push(SeasonInfo {
+                    season_number: snum,
+                    name,
+                    episode_count: ep_cnt,
+                });
+            }
+            out
+        })
+        .unwrap_or_default();
+
     UnifiedMedia {
         id,
         mal_id: None,
@@ -686,7 +1001,8 @@ fn parse_tmdb_json(v: &Value, media_type: &str) -> UnifiedMedia {
         trailer_youtube_id: None,
         next_airing_label: None,
         cast: vec![],
-        seasons: vec![],
+        seasons,
+        related_seasons,
         recommendations: vec![],
     }
 }
@@ -883,6 +1199,64 @@ fn parse_anilist_media(v: &Value) -> UnifiedMedia {
         })
         .unwrap_or_default();
 
+    // Parse 2-level AniList relations (PREQUEL, SEQUEL, SIDE_STORY, SPIN_OFF, PARENT, ALTERNATIVE)
+    let mut related_seasons: Vec<RelatedSeasonItem> = Vec::new();
+    if let Some(edges) = v.pointer("/relations/edges").and_then(|x| x.as_array()) {
+        for edge in edges {
+            let rel_type = edge
+                .get("relationType")
+                .and_then(|r| r.as_str())
+                .unwrap_or("RELATED");
+            if let Some(node) = edge.get("node") {
+                push_anilist_relation_node(&mut related_seasons, node, rel_type, &id);
+                // Also inspect 2nd-hop relations (e.g. Prequel's Prequel or Sequel's Sequel)
+                if let Some(sub_edges) = node.pointer("/relations/edges").and_then(|x| x.as_array()) {
+                    for sub_edge in sub_edges {
+                        let sub_rel = sub_edge
+                            .get("relationType")
+                            .and_then(|r| r.as_str())
+                            .unwrap_or("SERIES");
+                        if sub_rel == "PREQUEL" || sub_rel == "SEQUEL" || sub_rel == "PARENT" {
+                            if let Some(sub_node) = sub_edge.get("node") {
+                                push_anilist_relation_node(
+                                    &mut related_seasons,
+                                    sub_node,
+                                    "SERIES",
+                                    &id,
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if !related_seasons.is_empty() && !related_seasons.iter().any(|r| r.id == id) {
+        related_seasons.push(RelatedSeasonItem {
+            id: id.clone(),
+            season_number: 1,
+            media_type: "anime".into(),
+            title: title.clone(),
+            poster_url: poster_url.clone(),
+            release_year: release_year.clone(),
+            total_episodes,
+            rating: format!("{:.1}", score),
+            relation_label: "CURRENT".into(),
+            is_current: true,
+        });
+    }
+
+    related_seasons.sort_by(|a, b| {
+        let ya: i32 = a.release_year.parse().unwrap_or(9999);
+        let yb: i32 = b.release_year.parse().unwrap_or(9999);
+        ya.cmp(&yb).then_with(|| {
+            let ia: i64 = a.id.parse().unwrap_or(0);
+            let ib: i64 = b.id.parse().unwrap_or(0);
+            ia.cmp(&ib)
+        })
+    });
+
     UnifiedMedia {
         id,
         mal_id,
@@ -903,8 +1277,88 @@ fn parse_anilist_media(v: &Value) -> UnifiedMedia {
         next_airing_label,
         cast,
         seasons: vec![],
+        related_seasons,
         recommendations,
     }
+}
+
+fn push_anilist_relation_node(
+    list: &mut Vec<RelatedSeasonItem>,
+    node: &Value,
+    rel_type: &str,
+    current_id: &str,
+) {
+    let mtype = node.get("type").and_then(|t| t.as_str()).unwrap_or("");
+    if mtype != "ANIME" {
+        return;
+    }
+    let format = node.get("format").and_then(|f| f.as_str()).unwrap_or("TV");
+    if format == "MUSIC" {
+        return;
+    }
+    let nid = match node.get("id").and_then(|i| i.as_i64()) {
+        Some(n) => n.to_string(),
+        None => return,
+    };
+    if list.iter().any(|x| x.id == nid) {
+        return;
+    }
+    let is_curr = nid == current_id;
+    let title = node
+        .pointer("/title/english")
+        .and_then(|x| x.as_str())
+        .or_else(|| node.pointer("/title/romaji").and_then(|x| x.as_str()))
+        .unwrap_or("Related Season")
+        .to_string();
+    let poster_url = node
+        .pointer("/coverImage/extraLarge")
+        .and_then(|x| x.as_str())
+        .or_else(|| node.pointer("/coverImage/large").and_then(|x| x.as_str()))
+        .unwrap_or("")
+        .to_string();
+    if poster_url.is_empty() {
+        return;
+    }
+    let release_year = node
+        .get("seasonYear")
+        .and_then(|x| x.as_i64())
+        .or_else(|| node.pointer("/startDate/year").and_then(|x| x.as_i64()))
+        .unwrap_or(2024)
+        .to_string();
+    let total_episodes = node
+        .get("episodes")
+        .and_then(|x| x.as_u64())
+        .unwrap_or(12) as u32;
+    let score = node
+        .get("averageScore")
+        .and_then(|x| x.as_f64())
+        .map(|s| s / 10.0)
+        .unwrap_or(8.2);
+
+    let label = if is_curr {
+        "CURRENT".to_string()
+    } else {
+        match rel_type {
+            "PREQUEL" => "PREQUEL (SEASON SEBELUMNYA)".to_string(),
+            "SEQUEL" => "SEQUEL (SEASON SELANJUTNYA)".to_string(),
+            "SIDE_STORY" | "SPIN_OFF" => "SPIN-OFF / OVA".to_string(),
+            _ if format == "MOVIE" => "MOVIE".to_string(),
+            _ => "SERIES / SEASON".to_string(),
+        }
+    };
+
+    list.push(RelatedSeasonItem {
+        id: nid,
+        season_number: 1,
+        media_type: "anime".into(),
+        title,
+        poster_url,
+        release_year,
+        total_episodes,
+        rating: format!("{:.1}", score),
+        relation_label: label,
+        is_current: is_curr,
+    });
 }
 
 pub fn fallback_movies() -> Vec<UnifiedMedia> {
@@ -929,6 +1383,7 @@ pub fn fallback_movies() -> Vec<UnifiedMedia> {
             next_airing_label: None,
             cast: vec![],
             seasons: vec![],
+            related_seasons: vec![],
             recommendations: vec![],
         },
         UnifiedMedia {
@@ -951,6 +1406,7 @@ pub fn fallback_movies() -> Vec<UnifiedMedia> {
             next_airing_label: None,
             cast: vec![],
             seasons: vec![],
+            related_seasons: vec![],
             recommendations: vec![],
         },
     ]
@@ -981,6 +1437,7 @@ pub fn fallback_tv_shows() -> Vec<UnifiedMedia> {
                 SeasonInfo { season_number: 1, name: "Season 1".into(), episode_count: 9 },
                 SeasonInfo { season_number: 2, name: "Season 2".into(), episode_count: 9 },
             ],
+            related_seasons: vec![],
             recommendations: vec![],
         },
     ]
@@ -1008,6 +1465,7 @@ pub fn fallback_anime_list() -> Vec<UnifiedMedia> {
             next_airing_label: None,
             cast: vec![],
             seasons: vec![],
+            related_seasons: vec![],
             recommendations: vec![],
         },
     ]

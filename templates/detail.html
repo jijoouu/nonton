@@ -3,8 +3,8 @@
 {% block title %}{{ media.title }} — N' Detail & Episode Index{% endblock %}
 
 {% block content %}
-<div class="bg-black text-white pt-24 pb-24 px-5 sm:px-10">
-  <div class="mx-auto max-w-[1600px] space-y-16">
+<div class="bg-black text-white pt-24 pb-24 px-6 sm:px-8">
+  <div class="mx-auto max-w-[1380px] space-y-12">
     <!-- Top Editorial Breadcrumb -->
     <div class="flex items-center justify-between border-b border-white/15 pb-5">
       <a href="/" class="noth-pill noth-pill-outline-light !py-2 !px-4 !text-[11px]">
@@ -13,88 +13,189 @@
       <span class="noth-paren">( {{ media.badge_label() }} · {{ media.release_year }} )</span>
     </div>
 
-    <!-- Monumental Showreel & Metadata Grid -->
-    <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 items-start">
-      <!-- Poster Column -->
-      <div class="lg:col-span-4">
-        <div class="noth-media-frame aspect-[2/3] border border-white/15">
-          <img src="{{ media.poster_url }}" alt="{{ media.title }}" class="h-full w-full object-cover" />
-        </div>
-      </div>
+    <!-- Proportional Detail Showcase Card -->
+    <div class="relative overflow-hidden rounded-2xl border border-white/15 bg-neutral-950 p-6 sm:p-10">
+      <!-- Subtle Diffused Ambient Backdrop -->
+      <img
+        src="{{ media.backdrop_url }}"
+        alt=""
+        class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20 blur-sm scale-105"
+      />
+      <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/90 to-black/75"></div>
 
-      <!-- Editorial Info Column -->
-      <div class="lg:col-span-8 space-y-8">
-        <div class="space-y-4">
-          <div class="flex flex-wrap items-center gap-3 font-mono text-xs">
-            <span class="noth-paren">( {{ media.badge_label() }} )</span>
-            <span class="rounded-full bg-white text-black px-3 py-0.5 font-bold">★ {{ media.rating }}</span>
-            <span class="rounded-full border border-white/25 px-3 py-0.5 text-neutral-300">{{ media.status }}</span>
-            <span class="text-neutral-400">· {{ media.studio }}</span>
+      <div class="relative z-10 flex flex-col gap-8 md:flex-row md:items-start">
+        <!-- Crisp Proportional 2:3 Poster (w-44 sm:w-56 — never huge or blurry!) -->
+        <div class="w-44 sm:w-56 shrink-0 overflow-hidden rounded-xl border border-white/20 bg-neutral-900 shadow-2xl">
+          <img src="{{ media.poster_url }}" alt="{{ media.title }}" class="aspect-[2/3] w-full object-cover object-top" />
+        </div>
+
+        <!-- Editorial Info Column -->
+        <div class="flex-1 space-y-6">
+          <div class="space-y-3">
+            <div class="flex flex-wrap items-center gap-3 font-mono text-xs">
+              <span class="noth-paren">( {{ media.badge_label() }} )</span>
+              <span class="rounded-full bg-white text-black px-3 py-0.5 font-bold">{{ media.rating }}</span>
+              <span class="rounded-full border border-white/25 px-3 py-0.5 text-neutral-300">{{ media.status }}</span>
+              <span class="text-neutral-400">· {{ media.studio }}</span>
+            </div>
+
+            <h1 class="text-3xl sm:text-5xl font-semibold tracking-tight text-white leading-[1.06]">
+              {{ media.title }}
+            </h1>
           </div>
 
-          <h1 class="text-4xl sm:text-6xl lg:text-7xl font-normal tracking-tight text-white leading-[1.04]">
-            {{ media.title }}
-          </h1>
-        </div>
+          <div class="flex flex-wrap gap-2">
+            {% for g in media.genres %}
+            <span class="rounded-full border border-white/20 px-3 py-1 font-mono text-[11px] uppercase text-neutral-300">{{ g }}</span>
+            {% endfor %}
+          </div>
 
-        <div class="flex flex-wrap gap-2">
-          {% for g in media.genres %}
-          <span class="rounded-full border border-white/20 px-3.5 py-1 font-mono text-xs uppercase text-neutral-300">{{ g }}</span>
-          {% endfor %}
-        </div>
+          <div class="border-t border-white/15 pt-5 space-y-2">
+            <div class="noth-paren">( Synopsis )</div>
+            <p class="max-w-3xl text-sm sm:text-base leading-relaxed text-neutral-300">{{ media.synopsis }}</p>
+          </div>
 
-        <div class="border-t border-white/15 pt-6 space-y-2">
-          <div class="noth-paren">( Synopsis )</div>
-          <p class="max-w-3xl text-base sm:text-lg leading-relaxed text-neutral-300">{{ media.synopsis }}</p>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-3 pt-4">
-          <a href="{{ media.watch_href() }}" class="noth-pill noth-pill-light">
-            <span>▶ START STREAMING</span>
-            <span class="noth-pill-arrow">→</span>
-          </a>
-          <button
-            type="button"
-            data-watchlist-btn
-            data-id="{{ media.id }}"
-            data-type="{{ media.media_type }}"
-            data-title="{{ media.title }}"
-            data-poster="{{ media.poster_url }}"
-            data-backdrop="{{ media.backdrop_url }}"
-            data-rating="{{ media.rating }}"
-            data-year="{{ media.release_year }}"
-            class="noth-pill noth-pill-outline-light"
-          >
-            + WATCHLIST
-          </button>
-        </div>
-
-        <!-- Backdrop Preview Banner -->
-        <div class="noth-media-frame aspect-[21/9] mt-8 border border-white/15">
-          <img src="{{ media.backdrop_url }}" alt="{{ media.title }}" class="h-full w-full object-cover opacity-80" />
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <a href="{{ media.watch_href() }}" class="noth-pill noth-pill-light">
+              <span>START STREAMING</span>
+              <span class="noth-pill-arrow">→</span>
+            </a>
+            <button
+              type="button"
+              data-watchlist-btn
+              data-id="{{ media.id }}"
+              data-type="{{ media.media_type }}"
+              data-title="{{ media.title }}"
+              data-poster="{{ media.poster_url }}"
+              data-backdrop="{{ media.backdrop_url }}"
+              data-rating="{{ media.rating }}"
+              data-year="{{ media.release_year }}"
+              class="noth-pill noth-pill-outline-light"
+            >
+              + WATCHLIST
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Episode Grid if Series or Anime -->
+    <!-- Episode Grid if Series or Anime (Exact Per-Season Episode Count) -->
     {% if media.media_type != "movie" %}
-    <section class="space-y-6 border-t border-white/15 pt-12">
-      <div class="flex items-center justify-between">
+    <section class="space-y-6 border-t border-white/15 pt-10">
+      <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div class="noth-paren">( Episodic Archive )</div>
-          <h2 class="text-2xl sm:text-3xl font-normal tracking-tight text-white mt-1">
-            Select Episode ({{ media.total_episodes }} Episodes)
+          <h2 class="text-xl sm:text-2xl font-medium tracking-tight text-white mt-1">
+            Select Episode ({% if media.media_type == "tv" && media.seasons.len() > 1 %}Season {{ current_season }} · {% endif %}{{ episode_preview_limit }} Episodes)
           </h2>
         </div>
+
+        {% if media.media_type == "tv" && media.seasons.len() > 1 %}
+        <div class="flex flex-wrap gap-2">
+          {% for s in media.seasons %}
+          <a
+            href="/tv/{{ media.id }}?season={{ s.season_number }}"
+            class="noth-pill {% if s.season_number == current_season %}noth-pill-light{% else %}noth-pill-outline-light{% endif %} !py-2 !px-4 !text-[11px]"
+          >
+            <span>{{ s.name }}</span>
+            <span class="font-mono text-[10px] opacity-70">({{ s.episode_count }} EP)</span>
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
       </div>
+
       <div class="grid grid-cols-4 gap-2.5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12">
         {% for ep in 1..=episode_preview_limit %}
         <a
-          href="{% if media.media_type == "tv" %}/watch/tv/{{ media.id }}/1/{{ ep }}{% else %}/watch/anime/{{ media.id }}/{{ ep }}{% endif %}"
-          class="flex h-11 items-center justify-center rounded-full border border-white/20 bg-transparent font-mono text-xs font-medium text-white transition-all hover:bg-white hover:text-black"
+          href="{% if media.media_type == "tv" %}/watch/tv/{{ media.id }}/{{ current_season }}/{{ ep }}{% else %}/watch/anime/{{ media.id }}/{{ ep }}{% endif %}"
+          class="flex h-10 items-center justify-center rounded-full border border-white/20 bg-transparent font-mono text-xs font-medium text-white transition-all hover:bg-white hover:text-black"
         >
           {{ ep }}
         </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Anime Franchise & Season Timeline (e.g. JoJo Season 1..6) -->
+    {% if !media.related_seasons.is_empty() %}
+    <section class="space-y-6 border-t border-white/15 pt-10">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="space-y-1">
+          <div class="noth-paren">( Franchise &amp; Season Timeline )</div>
+          <h2 class="text-xl sm:text-2xl font-medium tracking-tight text-white">
+            Urutan Season Sebelumnya &amp; Selanjutnya
+          </h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="scrollMediaRow(this, 'left')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">←</button>
+          <button type="button" onclick="scrollMediaRow(this, 'right')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">→</button>
+        </div>
+      </div>
+
+      <div data-row-track class="no-scrollbar flex gap-4 sm:gap-5 overflow-x-auto pb-3">
+        {% for rel in media.related_seasons %}
+        <div class="w-[165px] sm:w-[195px] shrink-0">
+          <a
+            href="{{ rel.detail_href() }}"
+            class="noth-media-card group block rounded-2xl border p-2.5 transition-all {% if rel.is_current %}border-white bg-white/10{% else %}border-white/15 bg-neutral-950 hover:border-white/50{% endif %}"
+          >
+            <div class="noth-media-frame aspect-[2/3]">
+              <img src="{{ rel.poster_url }}" alt="{{ rel.title }}" loading="lazy" class="noth-media-img" />
+              <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
+                <span class="truncate rounded-full px-2.5 py-0.5 font-mono text-[9px] font-bold uppercase {% if rel.is_current %}bg-white text-black{% else %}bg-black/85 border border-white/25 text-white{% endif %}">
+                  {% if rel.is_current %}CURRENT{% else %}{{ rel.relation_label }}{% endif %}
+                </span>
+              </div>
+            </div>
+            <div class="pt-3 space-y-1 px-1">
+              <h4 class="truncate text-xs sm:text-sm font-medium text-white group-hover:opacity-75">{{ rel.title }}</h4>
+              <div class="flex items-center justify-between font-mono text-[11px] text-neutral-400">
+                <span>{{ rel.release_year }}</span>
+                <span>{{ rel.total_episodes }} EP</span>
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Related & Recommended Works -->
+    {% if !media.recommendations.is_empty() %}
+    <section class="space-y-6 border-t border-white/15 pt-10">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="space-y-1">
+          <div class="noth-paren">( Related Works )</div>
+          <h2 class="text-xl sm:text-2xl font-medium tracking-tight text-white">
+            Rekomendasi &amp; Tontonan Serupa
+          </h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="scrollMediaRow(this, 'left')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">←</button>
+          <button type="button" onclick="scrollMediaRow(this, 'right')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">→</button>
+        </div>
+      </div>
+
+      <div data-row-track class="no-scrollbar flex gap-4 sm:gap-5 overflow-x-auto pb-3">
+        {% for item in media.recommendations %}
+        <div class="w-[150px] sm:w-[176px] shrink-0">
+          <a href="{{ item.detail_href() }}" class="noth-media-card group">
+            <div class="noth-media-frame aspect-[2/3]">
+              <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="noth-media-img" />
+              <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
+                <span class="rounded-full bg-black/80 border border-white/20 px-2 py-0.5 font-mono text-[10px] text-white">{{ item.badge_label() }}</span>
+                <span class="rounded-full bg-white text-black px-2 py-0.5 font-mono text-[10px] font-bold">{{ item.rating }}</span>
+              </div>
+            </div>
+            <div class="noth-media-meta">
+              <h4 class="truncate text-xs sm:text-sm font-medium text-white group-hover:opacity-65">{{ item.title }}</h4>
+              <span class="font-mono text-[11px] text-neutral-500 shrink-0">{{ item.release_year }}</span>
+            </div>
+          </a>
+        </div>
         {% endfor %}
       </div>
     </section>

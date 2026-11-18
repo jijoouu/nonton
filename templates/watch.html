@@ -24,8 +24,20 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5 relative z-50">
+        <button
+          type="button"
+          id="watch-party-toggle-btn"
+          onclick="toggleWatchPartyPanel()"
+          class="noth-pill noth-pill-light !py-2 !px-4 !text-[11px]"
+        >
+          <span id="party-live-dot" class="hidden h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="party-btn-label">WATCH PARTY</span>
+        </button>
+        <button type="button" onclick="togglePlayerFullscreen()" class="noth-pill noth-pill-outline-light !py-2 !px-4 !text-[11px]">
+          FULLSCREEN
+        </button>
         <button type="button" onclick="toggleCinemaDim()" id="cinema-dim-btn" class="noth-pill noth-pill-outline-light !py-2 !px-4 !text-[11px]">
-          🌙 LIGHTS OFF
+          LIGHTS OFF
         </button>
         <button
           type="button"
@@ -45,20 +57,256 @@
     </div>
 
     <!-- Player & Episode Sidebar Grid -->
+    <!-- =========================================================
+         ZERO-LOGIN WATCH PARTY (NONTON BARENG) STUDIO PANEL
+         ========================================================= -->
+    <div
+      id="watch-party-panel"
+      class="hidden relative z-40 rounded-2xl border border-white/25 bg-neutral-950 p-5 sm:p-6 shadow-2xl space-y-6"
+    >
+      <!-- 1. Lobby View (Before Joining / Creating a Room) -->
+      <div id="party-lobby-view" class="space-y-5">
+        <div class="flex flex-wrap items-start justify-between gap-4 border-b border-white/15 pb-4">
+          <div class="space-y-1">
+            <div class="noth-paren">( Zero-Login Watch Party )</div>
+            <h3 class="text-xl sm:text-2xl font-medium tracking-tight text-white">
+              Nonton Bareng Tanpa Login
+            </h3>
+            <p class="text-xs sm:text-sm text-neutral-400">
+              Buat room instan atau masukkan kode room teman. Episode, server, aba-aba waktu putar, dan live chat tersinkronisasi secara real-time.
+            </p>
+          </div>
+          <button
+            type="button"
+            onclick="toggleWatchPartyPanel()"
+            class="font-mono text-xs text-neutral-400 hover:text-white"
+          >
+            [CLOSE]
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-12 items-end">
+          <div class="md:col-span-4 space-y-1.5">
+            <label class="block font-mono text-[11px] uppercase tracking-wider text-neutral-400">
+              Nama Panggilan (Nickname)
+            </label>
+            <input
+              type="text"
+              id="party-nick-input"
+              maxlength="24"
+              placeholder="Contoh: Nathan"
+              class="w-full rounded-full border border-white/25 bg-black px-4 py-3 text-sm text-white placeholder-neutral-600 focus:border-white focus:outline-none"
+            />
+          </div>
+
+          <div class="md:col-span-4 space-y-1.5">
+            <label class="block font-mono text-[11px] uppercase tracking-wider text-neutral-400">
+              Kode Room (Kosongkan jika buat baru)
+            </label>
+            <input
+              type="text"
+              id="party-code-input"
+              maxlength="10"
+              placeholder="Contoh: N7X9K2"
+              class="w-full rounded-full border border-white/25 bg-black px-4 py-3 font-mono text-sm uppercase text-white placeholder-neutral-600 focus:border-white focus:outline-none"
+            />
+          </div>
+
+          <div class="md:col-span-4 flex flex-wrap gap-2.5">
+            <button
+              type="button"
+              onclick="startOrJoinWatchParty(false)"
+              class="noth-pill noth-pill-light flex-1 !py-3.5"
+            >
+              <span>CREATE / JOIN ROOM</span>
+              <span class="noth-pill-arrow">→</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Active Room View (Connected to Watch Party) -->
+      <div id="party-active-view" class="hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/15 pb-4">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 rounded-full bg-white text-black px-3.5 py-1 font-mono text-xs font-bold">
+              <span class="h-2 w-2 rounded-full bg-emerald-600 animate-ping"></span>
+              <span id="party-active-code">ROOM: ------</span>
+            </span>
+            <span id="party-role-badge" class="rounded-full border border-white/25 px-3 py-1 font-mono text-[11px] text-neutral-300">
+              HOST
+            </span>
+            <button
+              type="button"
+              onclick="copyWatchPartyLink()"
+              id="party-copy-btn"
+              class="noth-pill noth-pill-outline-light !py-1.5 !px-3.5 !text-[10px]"
+            >
+              COPY INVITE LINK
+            </button>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button
+              type="button"
+              onclick="leaveWatchParty()"
+              class="noth-pill noth-pill-outline-light !py-1.5 !px-3.5 !text-[10px]"
+            >
+              LEAVE ROOM
+            </button>
+            <button
+              type="button"
+              onclick="toggleWatchPartyPanel()"
+              class="font-mono text-xs text-neutral-400 hover:text-white"
+            >
+              [HIDE]
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <!-- Left Column: Sync Timer, 3-2-1 Play/Pause Trigger & Online Members -->
+          <div class="lg:col-span-5 space-y-5 flex flex-col justify-between rounded-2xl border border-white/15 bg-black p-4 sm:p-5">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="noth-paren">( Shared Room Timer )</span>
+                <span id="party-play-state" class="font-mono text-[11px] uppercase text-neutral-400">( PAUSED )</span>
+              </div>
+
+              <!-- Big Synchronized Timestamp Clock -->
+              <div class="flex items-baseline justify-between border-b border-white/10 pb-4">
+                <div id="party-timer-clock" class="font-mono text-4xl sm:text-5xl font-bold tracking-tight text-white">
+                  00:00
+                </div>
+                <div class="text-right font-mono text-[11px] text-neutral-400">
+                  <div>HOST: <strong id="party-host-name" class="text-white">-</strong></div>
+                </div>
+              </div>
+
+              <!-- Sync Action Buttons -->
+              <div class="space-y-2.5">
+                <div class="font-mono text-[11px] text-neutral-400">
+                  Klik <strong class="text-white">SYNC PLAY (3-2-1)</strong> untuk memberi aba-aba hitung mundur di layar semua teman:
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onclick="triggerPartySyncPlay()"
+                    class="noth-pill noth-pill-light flex-1 !py-2.5 !px-4 !text-[11px]"
+                  >
+                    SYNC PLAY (3-2-1)
+                  </button>
+                  <button
+                    type="button"
+                    onclick="triggerPartySyncPause()"
+                    class="noth-pill noth-pill-outline-light !py-2.5 !px-4 !text-[11px]"
+                  >
+                    SYNC PAUSE
+                  </button>
+                </div>
+
+                <!-- Manual Timestamp Sync (mm:ss) -->
+                <div class="flex items-center gap-2 pt-1">
+                  <input
+                    type="text"
+                    id="party-manual-time"
+                    placeholder="Set menit (contoh: 12:30)"
+                    class="w-full rounded-full border border-white/20 bg-neutral-950 px-3.5 py-2 font-mono text-xs text-white placeholder-neutral-500 focus:border-white focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onclick="triggerPartySeekTime()"
+                    class="noth-pill noth-pill-outline-light !py-2 !px-4 !text-[10px] shrink-0"
+                  >
+                    SET TIME
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Online Members List -->
+            <div class="space-y-2.5 border-t border-white/10 pt-4">
+              <div class="flex items-center justify-between">
+                <span class="noth-paren">( Members Online )</span>
+                <span id="party-member-count" class="font-mono text-xs text-white">1 ONLINE</span>
+              </div>
+              <div id="party-member-list" class="flex flex-wrap gap-1.5"></div>
+            </div>
+          </div>
+
+          <!-- Right Column: Real-Time Live Chat & Floating Reactions -->
+          <div class="lg:col-span-7 flex flex-col justify-between rounded-2xl border border-white/15 bg-black p-4 sm:p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+              <span class="noth-paren">( Live Party Chat )</span>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button type="button" onclick="sendPartyReaction('HYPE')" class="rounded-full border border-white/20 px-2.5 py-0.5 font-mono text-[10px] text-neutral-300 hover:bg-white hover:text-black transition-colors">HYPE</button>
+                <button type="button" onclick="sendPartyReaction('PEAK CINEMA')" class="rounded-full border border-white/20 px-2.5 py-0.5 font-mono text-[10px] text-neutral-300 hover:bg-white hover:text-black transition-colors">PEAK</button>
+                <button type="button" onclick="sendPartyReaction('PLOT TWIST')" class="rounded-full border border-white/20 px-2.5 py-0.5 font-mono text-[10px] text-neutral-300 hover:bg-white hover:text-black transition-colors">TWIST</button>
+                <button type="button" onclick="sendPartyReaction('HAHAHA')" class="rounded-full border border-white/20 px-2.5 py-0.5 font-mono text-[10px] text-neutral-300 hover:bg-white hover:text-black transition-colors">HAHA</button>
+              </div>
+            </div>
+
+            <!-- Chat Messages Feed -->
+            <div
+              id="party-chat-feed"
+              data-lenis-prevent
+              class="no-scrollbar h-56 overflow-y-auto space-y-2 pr-1 text-xs"
+            ></div>
+
+            <!-- Chat Input Form -->
+            <form onsubmit="sendPartyChatMessage(event)" class="flex items-center gap-2 pt-1">
+              <input
+                type="text"
+                id="party-chat-input"
+                autocomplete="off"
+                placeholder="Ketik pesan ke teman nobar lalu tekan Enter..."
+                class="w-full rounded-full border border-white/25 bg-neutral-950 px-4 py-2.5 text-xs sm:text-sm text-white placeholder-neutral-500 focus:border-white focus:outline-none"
+              />
+              <button type="submit" class="noth-pill noth-pill-light !py-2.5 !px-5 !text-[11px] shrink-0">
+                SEND →
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="watch-grid" class="grid gap-8 {% if media.media_type != "movie" %}lg:grid-cols-[1fr_360px]{% else %}grid-cols-1{% endif %}">
       <!-- Main Video Column -->
       <div class="relative z-50 space-y-6">
-        <div class="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/20 bg-black shadow-2xl">
+        <div id="player-box" class="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/20 bg-black shadow-2xl">
           <div id="player-loading" class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/90 font-mono text-xs text-neutral-400 transition-opacity duration-300">
             <div class="h-7 w-7 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
             <span>( INITIALIZING STREAM — SWITCH SERVER BELOW IF SLOW )</span>
           </div>
+
+          <!-- Watch Party Sync Countdown / Pause Signal Overlay (Visible even in Fullscreen!) -->
+          <div
+            id="party-sync-banner"
+            class="pointer-events-none hidden absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm transition-opacity"
+          >
+            <div class="noth-paren mb-2">( WATCH PARTY SYNC SIGNAL )</div>
+            <div id="party-sync-big-text" class="text-5xl sm:text-7xl font-extrabold tracking-tight text-white">3</div>
+            <div id="party-sync-sub-text" class="mt-3 font-mono text-xs uppercase tracking-widest text-neutral-300">
+              GET READY TO PRESS PLAY TOGETHER
+            </div>
+          </div>
+
+          <!-- Floating Reactions Overlay inside Player Box -->
+          <div
+            id="party-reaction-stage"
+            class="pointer-events-none absolute bottom-14 right-6 z-30 flex flex-col items-end gap-2"
+          ></div>
+
           <iframe
             id="stream-iframe"
             src="{{ servers[0].embed_url }}"
             title="{{ media.title }} Player"
-            allowfullscreen
-            allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+            allowfullscreen="true"
+            webkitallowfullscreen="true"
+            mozallowfullscreen="true"
+            allow="autoplay *; fullscreen *; picture-in-picture *; encrypted-media *; accelerometer *; gyroscope *"
+            referrerpolicy="origin"
             onload="document.getElementById('player-loading').style.opacity='0'"
             class="relative z-10 h-full w-full border-0"
           ></iframe>
@@ -72,9 +320,9 @@
             <a href="{{ prev_href }}" class="noth-pill noth-pill-outline-light !py-2.5 !px-4 !text-[11px]">← PREV EP</a>
             {% endif %}
             <span class="font-mono text-xs text-neutral-400 px-2">
-              ( EP {{ current_episode }} / {{ media.total_episodes }} )
+              ( {% if media.media_type == "tv" %}S{{ current_season }} · {% endif %}EP {{ current_episode }} / {{ episode_preview_limit }} )
             </span>
-            {% if current_episode < media.total_episodes %}
+            {% if current_episode < episode_preview_limit %}
             <a href="{{ next_href }}" class="noth-pill noth-pill-light !py-2.5 !px-5 !text-[11px]">NEXT EP →</a>
             {% endif %}
           </div>
@@ -115,16 +363,34 @@
         </div>
       </div>
 
-      <!-- Episode Selector Sidebar -->
+      <!-- Episode Selector Sidebar (Exact Per-Season Episode Count) -->
       {% if media.media_type != "movie" %}
       <div class="relative z-30 flex flex-col rounded-2xl border border-white/15 bg-neutral-950 p-5">
-        <div class="mb-4 flex items-center justify-between border-b border-white/15 pb-3">
-          <span class="noth-paren">( Episodes )</span>
-          <span class="font-mono text-xs text-white">{{ media.total_episodes }} TOTAL</span>
+        <div class="mb-3 flex items-center justify-between border-b border-white/15 pb-3">
+          <span class="noth-paren">( {% if media.media_type == "tv" %}Season {{ current_season }} {% endif %}Episodes )</span>
+          <span class="font-mono text-xs text-white">{{ episode_preview_limit }} EPISODES</span>
         </div>
-        <div class="grid grid-cols-4 gap-2 sm:grid-cols-5 max-h-[460px] overflow-y-auto pr-1">
+
+        {% if media.media_type == "tv" && media.seasons.len() > 1 %}
+        <div class="mb-3 flex flex-wrap gap-1.5 border-b border-white/10 pb-3">
+          {% for s in media.seasons %}
+          <a
+            href="/watch/tv/{{ media.id }}/{{ s.season_number }}/1"
+            class="rounded-full border px-2.5 py-1 font-mono text-[10px] transition-all {% if s.season_number == current_season %}border-white bg-white font-bold text-black{% else %}border-white/15 text-neutral-400 hover:border-white hover:text-white{% endif %}"
+          >
+            S{{ s.season_number }} ({{ s.episode_count }})
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Range Chunk Selector (e.g. 1-30, 31-60...) generated automatically if > 30 episodes in this season -->
+        <div id="ep-range-tabs" class="mb-3 hidden flex-wrap gap-1.5 border-b border-white/10 pb-3"></div>
+
+        <div id="ep-grid-box" data-lenis-prevent class="no-scrollbar grid grid-cols-4 gap-2 sm:grid-cols-5">
           {% for ep in 1..=episode_preview_limit %}
           <a
+            data-ep-num="{{ ep }}"
             href="{% if media.media_type == "tv" %}/watch/tv/{{ media.id }}/{{ current_season }}/{{ ep }}{% else %}/watch/anime/{{ media.id }}/{{ ep }}?audio={{ active_audio }}{% endif %}"
             class="flex h-10 items-center justify-center rounded-full border font-mono text-xs font-medium transition-all {% if ep == current_episode %}border-white bg-white text-black font-bold{% else %}border-white/15 text-neutral-300 hover:border-white hover:text-white{% endif %}"
           >
@@ -135,21 +401,199 @@
       </div>
       {% endif %}
     </div>
+
+    <!-- =========================================================
+         TV SERIES SEASON SWITCHER (If TV Series has multiple seasons)
+         ========================================================= -->
+    {% if media.media_type == "tv" && media.seasons.len() > 1 %}
+    <section class="space-y-4 border-t border-white/15 pt-10">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="noth-paren">( Season Order )</div>
+          <h2 class="text-xl sm:text-2xl font-medium tracking-tight text-white mt-1">Pilih Season Serial TV</h2>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2.5">
+        {% for s in media.seasons %}
+        <a
+          href="/watch/tv/{{ media.id }}/{{ s.season_number }}/1"
+          class="noth-pill {% if s.season_number == current_season %}noth-pill-light{% else %}noth-pill-outline-light{% endif %}"
+        >
+          <span>{{ s.name }}</span>
+          <span class="font-mono text-[10px] opacity-70">({{ s.episode_count }} EP)</span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- =========================================================
+         ANIME FRANCHISE & SEASON ORDER (Prequel / Sequel / All Seasons e.g. JoJo)
+         ========================================================= -->
+    {% if !media.related_seasons.is_empty() %}
+    <section class="space-y-6 border-t border-white/15 pt-12">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="space-y-1">
+          <div class="noth-paren">( Franchise &amp; Season Timeline )</div>
+          <h2 class="text-2xl sm:text-3xl font-medium tracking-tight text-white">
+            Urutan Season Sebelumnya &amp; Selanjutnya
+          </h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="scrollMediaRow(this, 'left')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">←</button>
+          <button type="button" onclick="scrollMediaRow(this, 'right')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">→</button>
+        </div>
+      </div>
+
+      <div data-row-track class="no-scrollbar flex gap-4 sm:gap-5 overflow-x-auto pb-3">
+        {% for rel in media.related_seasons %}
+        <div class="w-[165px] sm:w-[195px] shrink-0">
+          <a
+            href="{{ rel.watch_href() }}"
+            class="noth-media-card group block rounded-2xl border p-2.5 transition-all {% if rel.is_current %}border-white bg-white/10{% else %}border-white/15 bg-neutral-950 hover:border-white/50{% endif %}"
+          >
+            <div class="noth-media-frame aspect-[2/3]">
+              <img src="{{ rel.poster_url }}" alt="{{ rel.title }}" loading="lazy" class="noth-media-img" />
+              <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
+                <span class="truncate rounded-full px-2.5 py-0.5 font-mono text-[9px] font-bold uppercase {% if rel.is_current %}bg-white text-black{% else %}bg-black/85 border border-white/25 text-white{% endif %}">
+                  {% if rel.is_current %}SEDANG DITONTON{% else %}{{ rel.relation_label }}{% endif %}
+                </span>
+              </div>
+            </div>
+            <div class="pt-3 space-y-1 px-1">
+              <h4 class="truncate text-xs sm:text-sm font-medium text-white group-hover:opacity-75">{{ rel.title }}</h4>
+              <div class="flex items-center justify-between font-mono text-[11px] text-neutral-400">
+                <span>{{ rel.release_year }}</span>
+                <span>{{ rel.total_episodes }} EP</span>
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- =========================================================
+         RELATED & RECOMMENDED CONTENT BELOW VIDEO PLAYER
+         ========================================================= -->
+    {% if !media.recommendations.is_empty() %}
+    <section class="space-y-6 border-t border-white/15 pt-12">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="space-y-1">
+          <div class="noth-paren">( Related Works )</div>
+          <h2 class="text-2xl sm:text-3xl font-medium tracking-tight text-white">
+            Rekomendasi &amp; Tontonan Serupa
+          </h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="scrollMediaRow(this, 'left')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">←</button>
+          <button type="button" onclick="scrollMediaRow(this, 'right')" class="noth-pill noth-pill-outline-light !py-2 !px-3.5">→</button>
+        </div>
+      </div>
+
+      <div data-row-track class="no-scrollbar flex gap-4 sm:gap-5 overflow-x-auto pb-3">
+        {% for item in media.recommendations %}
+        <div class="w-[150px] sm:w-[176px] shrink-0">
+          <a href="{{ item.detail_href() }}" class="noth-media-card group">
+            <div class="noth-media-frame aspect-[2/3]">
+              <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="noth-media-img" />
+              <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
+                <span class="rounded-full bg-black/80 border border-white/20 px-2 py-0.5 font-mono text-[10px] text-white">{{ item.badge_label() }}</span>
+                <span class="rounded-full bg-white text-black px-2 py-0.5 font-mono text-[10px] font-bold">{{ item.rating }}</span>
+              </div>
+            </div>
+            <div class="noth-media-meta">
+              <h4 class="truncate text-xs sm:text-sm font-medium text-white group-hover:opacity-65">{{ item.title }}</h4>
+              <span class="font-mono text-[11px] text-neutral-500 shrink-0">{{ item.release_year }}</span>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
   </div>
 </div>
 
 <script>
-function switchStreamServer(btn) {
+const PARTY_NICK_KEY = "nonton_party_nickname";
+const PARTY_UID_KEY = "nonton_party_client_uid";
+
+let activeRoomCode = "";
+let partyClientId = "";
+let partyNickname = "";
+let partyPollTimer = null;
+let partyClockTimer = null;
+let partyIsPlaying = false;
+let partyLiveElapsedSec = 0;
+let lastSeenSignalId = 0;
+let lastSeenMessageId = 0;
+let isSyncingFromRemote = false;
+
+function getOrCreatePartyUid() {
+  let uid = localStorage.getItem(PARTY_UID_KEY);
+  if (!uid) {
+    uid = "u_" + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    localStorage.setItem(PARTY_UID_KEY, uid);
+  }
+  return uid;
+}
+
+function generateRandomRoomCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out = "";
+  for (let i = 0; i < 6; i++) {
+    out += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return out;
+}
+
+function formatMMSS(sec) {
+  const s = Math.max(0, Math.floor(sec || 0));
+  const mm = String(Math.floor(s / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
+}
+
+function parseMMSS(str) {
+  const parts = String(str || "").trim().split(":");
+  if (parts.length === 2) {
+    const m = parseInt(parts[0], 10) || 0;
+    const s = parseInt(parts[1], 10) || 0;
+    return m * 60 + s;
+  }
+  const single = parseInt(parts[0], 10);
+  return isNaN(single) ? null : single * 60;
+}
+
+function switchStreamServer(btn, fromRemote = false) {
   const iframe = document.getElementById("stream-iframe");
   const loader = document.getElementById("player-loading");
   if (loader) loader.style.opacity = "1";
   if (iframe && btn.dataset.embed) {
     iframe.src = btn.dataset.embed;
   }
-  document.querySelectorAll("[data-server-btn]").forEach((b) => {
-    b.className = "noth-pill noth-pill-outline-light";
+  const allBtns = Array.from(document.querySelectorAll("[data-server-btn]"));
+  let selectedIdx = 0;
+  allBtns.forEach((b, idx) => {
+    if (b === btn) {
+      selectedIdx = idx;
+      b.className = "noth-pill noth-pill-light";
+    } else {
+      b.className = "noth-pill noth-pill-outline-light";
+    }
   });
-  btn.className = "noth-pill noth-pill-light";
+
+  if (activeRoomCode && !fromRemote && !isSyncingFromRemote) {
+    const srvName = btn.querySelector("span")?.textContent || `Server ${selectedIdx + 1}`;
+    sendPartyAction({
+      action: "switch_server",
+      server_idx: selectedIdx,
+      server_name: srvName,
+      server_url: btn.dataset.embed || "",
+    });
+  }
 }
 
 function toggleCinemaDim() {
@@ -158,7 +602,414 @@ function toggleCinemaDim() {
   if (!overlay) return;
   overlay.classList.toggle("hidden");
   const isDim = !overlay.classList.contains("hidden");
-  if (btn) btn.textContent = isDim ? "☀️ LIGHTS ON" : "🌙 LIGHTS OFF";
+  if (btn) btn.textContent = isDim ? "LIGHTS ON" : "LIGHTS OFF";
+}
+
+function togglePlayerFullscreen() {
+  const box = document.getElementById("player-box") || document.getElementById("stream-iframe");
+  if (!box) return;
+  if (!document.fullscreenElement) {
+    if (box.requestFullscreen) box.requestFullscreen();
+    else if (box.webkitRequestFullscreen) box.webkitRequestFullscreen();
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+  }
+}
+
+function toggleWatchPartyPanel() {
+  const panel = document.getElementById("watch-party-panel");
+  if (!panel) return;
+  panel.classList.toggle("hidden");
+}
+
+function decorateLinksWithRoom(code) {
+  document.querySelectorAll("a[href^='/watch/']").forEach((a) => {
+    try {
+      const url = new URL(a.href, window.location.origin);
+      if (code) {
+        url.searchParams.set("room", code);
+      } else {
+        url.searchParams.delete("room");
+      }
+      a.href = url.pathname + url.search;
+    } catch (e) {}
+  });
+}
+
+async function startOrJoinWatchParty(autoFromUrl = false) {
+  const nickInput = document.getElementById("party-nick-input");
+  const codeInput = document.getElementById("party-code-input");
+  partyClientId = getOrCreatePartyUid();
+
+  let nick = (nickInput && nickInput.value.trim()) || localStorage.getItem(PARTY_NICK_KEY) || "";
+  if (!nick) {
+    nick = "Guest-" + partyClientId.slice(-4).toUpperCase();
+  }
+  partyNickname = nick;
+  localStorage.setItem(PARTY_NICK_KEY, partyNickname);
+  if (nickInput) nickInput.value = partyNickname;
+
+  let code = (codeInput && codeInput.value.trim().toUpperCase()) || "";
+  if (!code) {
+    code = generateRandomRoomCode();
+  }
+
+  const allBtns = Array.from(document.querySelectorAll("[data-server-btn]"));
+  const firstBtn = allBtns[0];
+  const srvName = firstBtn?.querySelector("span")?.textContent || "Server 1";
+  const srvUrl = firstBtn?.dataset.embed || "";
+
+  try {
+    const res = await fetch("/api/party/join", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        room_code: code,
+        client_id: partyClientId,
+        nickname: partyNickname,
+        media_title: "{{ media.title }} {% if media.media_type != "movie" %}(Ep {{ current_episode }}){% endif %}",
+        current_path: window.location.pathname,
+        server_idx: 0,
+        server_name: srvName,
+        server_url: srvUrl,
+      }),
+    });
+    const data = await res.json();
+    if (!data.ok) return;
+
+    activeRoomCode = data.room_code;
+    lastSeenSignalId = data.sync_signal_id || 0;
+
+    // Update browser URL with ?room=CODE without reloading
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set("room", activeRoomCode);
+    window.history.replaceState({}, "", newUrl.toString());
+    decorateLinksWithRoom(activeRoomCode);
+
+    document.getElementById("party-lobby-view")?.classList.add("hidden");
+    document.getElementById("party-active-view")?.classList.remove("hidden");
+    document.getElementById("watch-party-panel")?.classList.remove("hidden");
+    document.getElementById("party-live-dot")?.classList.remove("hidden");
+    const btnLabel = document.getElementById("party-btn-label");
+    if (btnLabel) btnLabel.textContent = `PARTY: ${activeRoomCode}`;
+
+    applyPartySnapshot(data, true);
+
+    if (partyPollTimer) clearInterval(partyPollTimer);
+    partyPollTimer = setInterval(pollWatchPartyState, 1300);
+
+    if (partyClockTimer) clearInterval(partyClockTimer);
+    partyClockTimer = setInterval(() => {
+      if (partyIsPlaying) {
+        partyLiveElapsedSec += 1;
+        const clockEl = document.getElementById("party-timer-clock");
+        if (clockEl) clockEl.textContent = formatMMSS(partyLiveElapsedSec);
+      }
+    }, 1000);
+  } catch (e) {}
+}
+
+function leaveWatchParty() {
+  activeRoomCode = "";
+  if (partyPollTimer) clearInterval(partyPollTimer);
+  if (partyClockTimer) clearInterval(partyClockTimer);
+  partyPollTimer = null;
+  partyClockTimer = null;
+
+  const newUrl = new URL(window.location.href);
+  newUrl.searchParams.delete("room");
+  window.history.replaceState({}, "", newUrl.toString());
+  decorateLinksWithRoom("");
+
+  document.getElementById("party-active-view")?.classList.add("hidden");
+  document.getElementById("party-lobby-view")?.classList.remove("hidden");
+  document.getElementById("party-live-dot")?.classList.add("hidden");
+  const btnLabel = document.getElementById("party-btn-label");
+  if (btnLabel) btnLabel.textContent = "WATCH PARTY";
+}
+
+function copyWatchPartyLink() {
+  const url = new URL(window.location.href);
+  if (activeRoomCode) url.searchParams.set("room", activeRoomCode);
+  navigator.clipboard.writeText(url.toString());
+  const btn = document.getElementById("party-copy-btn");
+  if (btn) {
+    btn.textContent = "LINK COPIED!";
+    setTimeout(() => {
+      btn.textContent = "COPY INVITE LINK";
+    }, 2000);
+  }
+}
+
+async function pollWatchPartyState() {
+  if (!activeRoomCode) return;
+  try {
+    const res = await fetch(
+      `/api/party/poll?room=${encodeURIComponent(activeRoomCode)}&client_id=${encodeURIComponent(
+        partyClientId
+      )}&nickname=${encodeURIComponent(partyNickname)}`
+    );
+    const data = await res.json();
+    if (data && data.ok) {
+      applyPartySnapshot(data, false);
+    }
+  } catch (e) {}
+}
+
+function applyPartySnapshot(data, isInitial) {
+  const isHost = data.host_id === partyClientId;
+
+  // If Host moved to a different episode/title, automatically follow Host!
+  if (!isHost && data.current_path && data.current_path !== window.location.pathname) {
+    window.location.href = `${data.current_path}?room=${encodeURIComponent(data.room_code)}`;
+    return;
+  }
+
+  // Sync Server selection if changed in the room
+  const allBtns = Array.from(document.querySelectorAll("[data-server-btn]"));
+  const iframe = document.getElementById("stream-iframe");
+  if (
+    typeof data.active_server_idx === "number" &&
+    allBtns[data.active_server_idx] &&
+    data.active_server_url &&
+    iframe &&
+    iframe.src !== data.active_server_url
+  ) {
+    isSyncingFromRemote = true;
+    switchStreamServer(allBtns[data.active_server_idx], true);
+    isSyncingFromRemote = false;
+  }
+
+  const codeEl = document.getElementById("party-active-code");
+  if (codeEl) codeEl.textContent = `ROOM: ${data.room_code}`;
+
+  const roleEl = document.getElementById("party-role-badge");
+  if (roleEl) roleEl.textContent = isHost ? "YOU ARE HOST" : "MEMBER (AUTO-SYNC)";
+
+  const hostNameEl = document.getElementById("party-host-name");
+  if (hostNameEl) hostNameEl.textContent = data.host_name || "Host";
+
+  partyIsPlaying = !!data.is_playing;
+  partyLiveElapsedSec = data.live_elapsed_sec || 0;
+
+  const clockEl = document.getElementById("party-timer-clock");
+  if (clockEl) clockEl.textContent = formatMMSS(partyLiveElapsedSec);
+
+  const stateEl = document.getElementById("party-play-state");
+  if (stateEl) {
+    stateEl.textContent = partyIsPlaying ? "( PLAYING )" : "( PAUSED )";
+    stateEl.className = partyIsPlaying
+      ? "font-mono text-[11px] uppercase text-emerald-400 font-bold"
+      : "font-mono text-[11px] uppercase text-neutral-400";
+  }
+
+  // Handle new Sync Signal (3-2-1 Countdown Play, Pause, or Seek)
+  if (!isInitial && data.sync_signal_id && data.sync_signal_id > lastSeenSignalId) {
+    lastSeenSignalId = data.sync_signal_id;
+    runSyncOverlaySignal(data.sync_signal_type, data.sync_target_sec || 0);
+  } else if (isInitial && data.sync_signal_id) {
+    lastSeenSignalId = data.sync_signal_id;
+  }
+
+  // Render Online Members
+  const members = data.members || [];
+  const countEl = document.getElementById("party-member-count");
+  if (countEl) countEl.textContent = `${members.length} ONLINE`;
+
+  const memberListEl = document.getElementById("party-member-list");
+  if (memberListEl) {
+    memberListEl.innerHTML = members
+      .map(
+        (m) => `
+        <span class="inline-flex items-center gap-1.5 rounded-full border ${
+          m.is_host ? "border-white bg-white text-black font-bold" : "border-white/20 bg-neutral-900 text-white"
+        } px-3 py-1 font-mono text-[11px]">
+          <span>${escapeHtml(m.nickname)}</span>
+          ${m.is_host ? '<span class="text-[9px] opacity-70">(HOST)</span>' : ""}
+        </span>
+      `
+      )
+      .join("");
+  }
+
+  // Render Chat & Trigger New Floating Reactions
+  const messages = data.messages || [];
+  const feedEl = document.getElementById("party-chat-feed");
+  if (feedEl && messages.length > 0) {
+    const newestId = messages[messages.length - 1].id;
+    if (newestId > lastSeenMessageId) {
+      if (!isInitial) {
+        messages
+          .filter((msg) => msg.id > lastSeenMessageId && msg.kind === "reaction")
+          .forEach((msg) => spawnFloatingReaction(msg.sender, msg.text));
+      }
+      lastSeenMessageId = newestId;
+      feedEl.innerHTML = messages
+        .map((msg) => {
+          if (msg.is_system) {
+            return `
+              <div class="rounded-xl border border-white/10 bg-neutral-950 px-3 py-1.5 font-mono text-[11px] text-neutral-400">
+                <span class="text-white/50">[${msg.time_label}]</span> ${escapeHtml(msg.text)}
+              </div>
+            `;
+          }
+          if (msg.kind === "reaction") {
+            return `
+              <div class="flex items-center justify-between rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 font-mono text-[11px] text-white">
+                <span><strong>${escapeHtml(msg.sender)}</strong> sent reaction: <strong>${escapeHtml(msg.text)}</strong></span>
+                <span class="text-[10px] text-neutral-500">${msg.time_label}</span>
+              </div>
+            `;
+          }
+          return `
+            <div class="rounded-xl border border-white/10 bg-neutral-900/70 px-3.5 py-2 space-y-0.5">
+              <div class="flex items-center justify-between font-mono text-[10px] text-neutral-400">
+                <strong class="text-white">${escapeHtml(msg.sender)}</strong>
+                <span>${msg.time_label}</span>
+              </div>
+              <p class="text-xs sm:text-sm text-neutral-200 break-words leading-snug">${escapeHtml(msg.text)}</p>
+            </div>
+          `;
+        })
+        .join("");
+      feedEl.scrollTop = feedEl.scrollHeight;
+    }
+  }
+}
+
+function runSyncOverlaySignal(signalType, targetSec) {
+  const banner = document.getElementById("party-sync-banner");
+  const bigText = document.getElementById("party-sync-big-text");
+  const subText = document.getElementById("party-sync-sub-text");
+  if (!banner || !bigText || !subText) return;
+
+  const timeStr = formatMMSS(targetSec);
+  banner.classList.remove("hidden");
+
+  if (signalType === "play_countdown") {
+    let step = 3;
+    bigText.textContent = "3";
+    subText.textContent = `SIAPKAN VIDEO DI ${timeStr} — TEKAN PLAY SAAT HITUNGAN HABIS`;
+
+    const timer = setInterval(() => {
+      step -= 1;
+      if (step > 0) {
+        bigText.textContent = String(step);
+      } else if (step === 0) {
+        bigText.textContent = `PLAY (${timeStr})`;
+        subText.textContent = "TEKAN TOMBOL PLAY SEKARANG!";
+      } else {
+        clearInterval(timer);
+        banner.classList.add("hidden");
+      }
+    }, 950);
+  } else if (signalType === "pause") {
+    bigText.textContent = `PAUSE (${timeStr})`;
+    subText.textContent = "JEDA VIDEO ANDA DI POSISI INI";
+    setTimeout(() => {
+      banner.classList.add("hidden");
+    }, 2600);
+  } else if (signalType === "seek") {
+    bigText.textContent = `SYNC ${timeStr}`;
+    subText.textContent = `SAMAKAN POSISI VIDEO KE MENIT ${timeStr}`;
+    setTimeout(() => {
+      banner.classList.add("hidden");
+    }, 2600);
+  }
+}
+
+function spawnFloatingReaction(sender, text) {
+  const stage = document.getElementById("party-reaction-stage");
+  if (!stage) return;
+  const pill = document.createElement("div");
+  pill.className =
+    "rounded-full border border-white bg-black/85 px-4 py-1.5 font-mono text-xs font-bold text-white shadow-xl backdrop-blur-md transition-all duration-700 translate-y-2 opacity-0";
+  pill.textContent = `${sender}: ${text}`;
+  stage.appendChild(pill);
+
+  requestAnimationFrame(() => {
+    pill.classList.remove("translate-y-2", "opacity-0");
+  });
+
+  setTimeout(() => {
+    pill.classList.add("-translate-y-6", "opacity-0");
+    setTimeout(() => pill.remove(), 700);
+  }, 2400);
+}
+
+async function sendPartyAction(payload) {
+  if (!activeRoomCode) return;
+  try {
+    const res = await fetch("/api/party/action", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        room_code: activeRoomCode,
+        client_id: partyClientId,
+        nickname: partyNickname,
+        ...payload,
+      }),
+    });
+    const data = await res.json();
+    if (data && data.ok) {
+      applyPartySnapshot(data, false);
+    }
+  } catch (e) {}
+}
+
+function triggerPartySyncPlay() {
+  const manualInput = document.getElementById("party-manual-time");
+  const parsed = manualInput && manualInput.value.trim() ? parseMMSS(manualInput.value) : null;
+  sendPartyAction({
+    action: "sync_play",
+    target_sec: parsed !== null ? parsed : partyLiveElapsedSec,
+  });
+}
+
+function triggerPartySyncPause() {
+  sendPartyAction({
+    action: "sync_pause",
+  });
+}
+
+function triggerPartySeekTime() {
+  const manualInput = document.getElementById("party-manual-time");
+  if (!manualInput || !manualInput.value.trim()) return;
+  const sec = parseMMSS(manualInput.value);
+  if (sec === null) return;
+  sendPartyAction({
+    action: "sync_time",
+    target_sec: sec,
+  });
+  manualInput.value = "";
+}
+
+function sendPartyChatMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById("party-chat-input");
+  if (!input) return;
+  const txt = input.value.trim();
+  if (!txt) return;
+  input.value = "";
+  sendPartyAction({
+    action: "chat",
+    text: txt,
+  });
+}
+
+function sendPartyReaction(label) {
+  sendPartyAction({
+    action: "reaction",
+    text: label,
+  });
+}
+
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -172,6 +1023,65 @@ document.addEventListener("DOMContentLoaded", () => {
       season: {{ current_season }},
       episode: {{ current_episode }}
     });
+  }
+
+  // Pre-fill saved nickname & auto-join if ?room=CODE is present in URL
+  const savedNick = localStorage.getItem(PARTY_NICK_KEY);
+  const nickInput = document.getElementById("party-nick-input");
+  if (savedNick && nickInput) nickInput.value = savedNick;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomFromUrl = urlParams.get("room");
+  if (roomFromUrl) {
+    const codeInput = document.getElementById("party-code-input");
+    if (codeInput) codeInput.value = roomFromUrl.trim().toUpperCase();
+    startOrJoinWatchParty(true);
+  }
+
+  // Group episodes into clean 30-episode chunks so no scrollbar is ever needed
+  const epButtons = Array.from(document.querySelectorAll("[data-ep-num]"));
+  const tabsBox = document.getElementById("ep-range-tabs");
+  const currentEp = {{ current_episode }};
+  const chunkSize = 30;
+
+  if (epButtons.length > chunkSize && tabsBox) {
+    tabsBox.classList.remove("hidden");
+    tabsBox.classList.add("flex");
+    const totalChunks = Math.ceil(epButtons.length / chunkSize);
+    const activeChunk = Math.floor((currentEp - 1) / chunkSize);
+
+    const showChunk = (chunkIdx) => {
+      const start = chunkIdx * chunkSize + 1;
+      const end = (chunkIdx + 1) * chunkSize;
+      epButtons.forEach((btn) => {
+        const num = parseInt(btn.dataset.epNum, 10);
+        if (num >= start && num <= end) {
+          btn.classList.remove("hidden");
+          btn.classList.add("flex");
+        } else {
+          btn.classList.add("hidden");
+          btn.classList.remove("flex");
+        }
+      });
+      Array.from(tabsBox.children).forEach((t, i) => {
+        t.className =
+          i === chunkIdx
+            ? "rounded-full border border-white bg-white px-2.5 py-1 font-mono text-[10px] font-bold text-black transition-all"
+            : "rounded-full border border-white/15 bg-transparent px-2.5 py-1 font-mono text-[10px] text-neutral-400 hover:border-white hover:text-white transition-all";
+      });
+    };
+
+    for (let i = 0; i < totalChunks; i++) {
+      const s = i * chunkSize + 1;
+      const e = Math.min(epButtons.length, (i + 1) * chunkSize);
+      const tabBtn = document.createElement("button");
+      tabBtn.type = "button";
+      tabBtn.textContent = `${s}–${e}`;
+      tabBtn.addEventListener("click", () => showChunk(i));
+      tabsBox.appendChild(tabBtn);
+    }
+
+    showChunk(activeChunk);
   }
 });
 </script>

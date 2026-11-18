@@ -3,243 +3,347 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}N' — Nonton Creative Cinema & Anime Index{% endblock %}</title>
+  <title>{% block title %}Nothin' | Nonton — Creative Streaming Studio{% endblock %}</title>
+  <script>
+    /* Synchronous pre-paint check: only show splash screen on the very first visit of the session */
+    (function () {
+      try {
+        if (sessionStorage.getItem("noth_splash_shown") === "1") {
+          document.documentElement.classList.add("splash-seen");
+          document.documentElement.classList.remove("lenis-stopped");
+        }
+      } catch (e) {}
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
-  <link rel="stylesheet" href="/static/css/cinema.css" />
+  <link rel="stylesheet" href="/static/css/cinema.css?v=noth2026_v8" />
+  <style>
+    /* Hide all native scrollbars across the entire app */
+    *, *::before, *::after {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+    /* Critical inline fallback so browser cache can never break Splash or cause flash on subpages */
+    #noth-loader {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 999999;
+      background: #000000;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.9s cubic-bezier(0.76, 0, 0.24, 1);
+    }
+    #noth-loader.is-done {
+      transform: translate3d(0, -100%, 0);
+      pointer-events: none;
+    }
+    html.splash-seen #noth-loader {
+      display: none !important;
+    }
+    html.splash-seen .line-child {
+      transform: translateY(0%) !important;
+    }
+  </style>
 </head>
 <body class="bg-black text-white antialiased">
 
   <!-- =========================================================
-       NOTH.IN SPLASH SCREEN / PRELOADER (N + 3D SCULPTURE + ')
+       1. NOTH.IN SPLASH SCREEN / PRELOADER (FIRST VISIT ONLY)
        ========================================================= -->
   <div id="noth-loader" class="noth-loader" aria-label="Loading Nonton">
-    <div class="noth-loader-center">
-      <span class="noth-loader-char">N</span>
-      <!-- Glossy 3D Pink/Magenta Balloon-Dog / Cinema Sculpture Render -->
-      <div class="noth-loader-sculpture">
-        <svg viewBox="0 0 200 200" class="h-full w-full drop-shadow-[0_20px_35px_rgba(255,40,165,0.45)]" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <div class="noth-loader-center" style="display:flex;align-items:center;justify-content:center;gap:28px;">
+      <span class="noth-loader-char-n" style="font-size:74px;font-weight:800;color:#fff;line-height:1;">N</span>
+
+      <!-- 3D Glossy Pink/Magenta Balloon Dog Sculpture (Fixed 148x148 size) -->
+      <div class="noth-loader-dog-wrap" style="width:148px;height:148px;flex-shrink:0;">
+        <svg width="148" height="148" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:148px;height:148px;display:block;filter:drop-shadow(0 18px 28px rgba(0,0,0,0.85));">
           <defs>
-            <radialGradient id="balloonGloss" cx="35%" cy="28%" r="70%">
-              <stop offset="0%" stop-color="#FFD6F3" />
-              <stop offset="28%" stop-color="#FF47B8" />
-              <stop offset="68%" stop-color="#C80078" />
-              <stop offset="100%" stop-color="#4A002C" />
+            <radialGradient id="dogBodyGrad" cx="38%" cy="28%" r="68%">
+              <stop offset="0%" stop-color="#FFD8EB" />
+              <stop offset="22%" stop-color="#E878AD" />
+              <stop offset="58%" stop-color="#9E3368" />
+              <stop offset="88%" stop-color="#47102B" />
+              <stop offset="100%" stop-color="#1F0512" />
             </radialGradient>
-            <radialGradient id="balloonSpecular" cx="30%" cy="25%" r="45%">
-              <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.92" />
-              <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.18" />
+            <radialGradient id="dogDarkLimb" cx="35%" cy="25%" r="70%">
+              <stop offset="0%" stop-color="#F6B8D5" />
+              <stop offset="30%" stop-color="#B84B82" />
+              <stop offset="72%" stop-color="#5E193C" />
+              <stop offset="100%" stop-color="#1E0511" />
+            </radialGradient>
+            <radialGradient id="dogSpec" cx="32%" cy="24%" r="42%">
+              <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95" />
+              <stop offset="45%" stop-color="#FFFFFF" stop-opacity="0.22" />
               <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
             </radialGradient>
           </defs>
-          <!-- Sculptural Balloon Dog / Torus Knot Silhouette -->
-          <!-- Back Leg -->
-          <rect x="46" y="114" width="32" height="58" rx="16" transform="rotate(14 46 114)" fill="url(#balloonGloss)" />
-          <ellipse cx="56" cy="132" rx="6" ry="16" transform="rotate(14 56 132)" fill="url(#balloonSpecular)" />
-          <!-- Front Leg -->
-          <rect x="116" y="116" width="32" height="58" rx="16" transform="rotate(-12 116 116)" fill="url(#balloonGloss)" />
-          <ellipse cx="128" cy="134" rx="6" ry="16" transform="rotate(-12 128 134)" fill="url(#balloonSpecular)" />
+
+          <!-- Back Left Leg -->
+          <rect x="96" y="120" width="26" height="68" rx="13" transform="rotate(-6 96 120)" fill="url(#dogDarkLimb)" />
+          <!-- Back Right Leg (Foreground) -->
+          <rect x="116" y="118" width="28" height="70" rx="14" transform="rotate(-16 116 118)" fill="url(#dogBodyGrad)" />
+          <ellipse cx="127" cy="142" rx="5" ry="18" transform="rotate(-16 127 142)" fill="url(#dogSpec)" />
+
           <!-- Tail -->
-          <rect x="26" y="72" width="24" height="44" rx="12" transform="rotate(-38 26 72)" fill="url(#balloonGloss)" />
-          <!-- Body Sausage -->
-          <rect x="48" y="96" width="96" height="38" rx="19" fill="url(#balloonGloss)" />
-          <ellipse cx="92" cy="107" rx="34" ry="8" fill="url(#balloonSpecular)" />
-          <!-- Neck & Ears -->
-          <rect x="112" y="42" width="32" height="64" rx="16" transform="rotate(8 112 42)" fill="url(#balloonGloss)" />
-          <ellipse cx="124" cy="64" rx="7" ry="18" transform="rotate(8 124 64)" fill="url(#balloonSpecular)" />
-          <!-- Ear Loop -->
-          <rect x="96" y="24" width="28" height="48" rx="14" transform="rotate(-24 96 24)" fill="url(#balloonGloss)" />
-          <ellipse cx="106" cy="40" rx="5" ry="14" transform="rotate(-24 106 40)" fill="url(#balloonSpecular)" />
+          <rect x="130" y="76" width="20" height="44" rx="10" transform="rotate(24 130 76)" fill="url(#dogBodyGrad)" />
+          <ellipse cx="141" cy="92" rx="4" ry="11" transform="rotate(24 141 92)" fill="url(#dogSpec)" />
+
+          <!-- Torso Sausage -->
+          <rect x="78" y="102" width="68" height="32" rx="16" transform="rotate(6 78 102)" fill="url(#dogBodyGrad)" />
+          <ellipse cx="110" cy="113" rx="22" ry="6" transform="rotate(6 110 113)" fill="url(#dogSpec)" />
+
+          <!-- Front Back Leg -->
+          <rect x="64" y="116" width="26" height="72" rx="13" transform="rotate(16 64 116)" fill="url(#dogDarkLimb)" />
+          <!-- Front Foreground Leg -->
+          <rect x="82" y="118" width="28" height="74" rx="14" transform="rotate(8 82 118)" fill="url(#dogBodyGrad)" />
+          <ellipse cx="94" cy="146" rx="5.5" ry="20" transform="rotate(8 94 146)" fill="url(#dogSpec)" />
+
+          <!-- Neck -->
+          <rect x="72" y="68" width="28" height="48" rx="14" transform="rotate(-12 72 68)" fill="url(#dogBodyGrad)" />
+          <ellipse cx="83" cy="86" rx="5" ry="12" transform="rotate(-12 83 86)" fill="url(#dogSpec)" />
+
+          <!-- Left Ear (Back) -->
+          <rect x="58" y="20" width="28" height="58" rx="14" transform="rotate(-14 58 20)" fill="url(#dogDarkLimb)" />
+          <ellipse cx="69" cy="40" rx="5" ry="15" transform="rotate(-14 69 40)" fill="url(#dogSpec)" />
+
+          <!-- Right Ear (Front) -->
+          <rect x="82" y="18" width="30" height="60" rx="15" transform="rotate(18 82 18)" fill="url(#dogBodyGrad)" />
+          <ellipse cx="94" cy="39" rx="6" ry="16" transform="rotate(18 94 39)" fill="url(#dogSpec)" />
+
           <!-- Snout / Nose -->
-          <rect x="128" y="54" width="50" height="30" rx="15" transform="rotate(-6 128 54)" fill="url(#balloonGloss)" />
-          <ellipse cx="152" cy="63" rx="16" ry="6" transform="rotate(-6 152 63)" fill="url(#balloonSpecular)" />
-          <!-- Knot Tip -->
-          <circle cx="180" cy="66" r="6" fill="#FF7AD1" />
+          <rect x="44" y="64" width="54" height="30" rx="15" transform="rotate(-8 44 64)" fill="url(#dogBodyGrad)" />
+          <ellipse cx="66" cy="73" rx="16" ry="6" transform="rotate(-8 66 73)" fill="url(#dogSpec)" />
+          <circle cx="42" cy="80" r="5" fill="#B84B82" />
         </svg>
       </div>
-      <span class="noth-loader-char">'</span>
+
+      <span class="noth-loader-char-apos" style="font-size:74px;font-weight:800;color:#fff;line-height:1;align-self:flex-start;margin-top:-12px;">’</span>
     </div>
 
-    <!-- Bottom 3-Digit Counter (000 -> 100) -->
-    <div class="noth-loader-counter-wrap">
+    <!-- Bottom-Center 3-Digit Counter (000 -> 100) -->
+    <div class="noth-loader-counter-box">
       <div id="noth-loader-number" class="noth-loader-counter">000</div>
-      <div class="noth-loader-sub">( Curated Streaming Perspective )</div>
+    </div>
+
+    <!-- Bottom-Left Studio Notice Card -->
+    <div id="noth-splash-card" class="noth-splash-card">
+      <div class="font-mono text-[11px] uppercase tracking-wider text-[#9A9A94] mb-2.5">( STREAMING ENGINE )</div>
+      <p class="text-[13px] leading-[1.45] text-white/90 mb-4">
+        We use multi-server 4K providers (VidFast, VidLink, Vidy, VidZee) and zero-login local storage so your watchlist stays private on your device.
+      </p>
+      <div class="grid grid-cols-2 gap-2.5">
+        <button
+          type="button"
+          onclick="window.finishNothSplashNow()"
+          class="noth-pill noth-pill-outline-light !py-2.5 !px-4 !text-[11px] w-full"
+        >
+          SKIP INTRO
+        </button>
+        <button
+          type="button"
+          onclick="window.dismissSplashCard()"
+          class="noth-pill noth-pill-outline-light !py-2.5 !px-4 !text-[11px] w-full"
+        >
+          ACCEPT
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- =========================================================
-       FIXED MINIMALIST HEADER (.noth-header with difference blend)
+       2. FIXED HEADER (mix-blend-mode: difference)
        ========================================================= -->
   <header class="noth-header">
-    <!-- Left: N' Mark -->
-    <div class="flex items-start gap-10">
-      <a href="/" class="noth-logo" title="Nonton Home">
-        <span>N</span><span class="noth-logo-dot">'</span>
+    <div>
+      <a
+        href="/"
+        id="header-n-logo"
+        class="noth-logo transition-opacity duration-300"
+        title="Nonton Home"
+      >
+        N’
       </a>
-
-      <div class="hidden lg:flex items-center gap-6 pt-1">
-        <a href="/" class="noth-micro-link">Index</a>
-        <a href="/movies" class="noth-micro-link">Movies</a>
-        <a href="/tv" class="noth-micro-link">Series</a>
-        <a href="/tv?genre=K-Drama" class="noth-micro-link">K-Drama</a>
-        <a href="/anime" class="noth-micro-link">Anime</a>
-        <a href="/schedule" class="noth-micro-link">Schedule</a>
-      </div>
     </div>
 
-    <!-- Right: Controls & 2x2 Square Dot Grid Menu Button -->
-    <div class="flex items-center gap-5 sm:gap-7">
-      <button
-        id="open-search-btn"
-        type="button"
-        class="noth-micro-link flex items-center gap-2 cursor-pointer bg-transparent border-0 p-0"
-      >
-        <span>SEARCH</span>
-        <span class="font-mono text-[10px] opacity-60 hidden sm:inline">[CTRL+K]</span>
-      </button>
+    <!-- Center Visible Search Bar Trigger (Always accessible on every page) -->
+    <button
+      type="button"
+      id="header-search-trigger"
+      onclick="window.openNothSearch()"
+      class="noth-header-search-bar"
+      title="Cari Film, Serial TV, K-Drama, atau Anime (Ctrl+K)"
+    >
+      <span class="flex items-center gap-2.5 truncate">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <span class="truncate uppercase tracking-wider">Cari film, series, anime...</span>
+      </span>
+      <span class="font-mono text-[10px] opacity-75 shrink-0 hidden sm:inline">[CTRL+K]</span>
+    </button>
 
-      <a href="/watchlist" class="noth-micro-link flex items-center gap-1.5">
-        <span>WATCHLIST</span>
-        <span id="nav-watchlist-count" class="hidden font-mono text-[11px]">(0)</span>
-      </a>
-
-      <button
-        type="button"
-        id="lang-toggle-btn"
-        onclick="this.classList.toggle('is-en')"
-        class="noth-lang-pill is-en hidden sm:inline-flex cursor-pointer bg-transparent text-white"
-        title="Toggle Perspective"
-      >
-        <span class="opacity-50">ID</span>
-        <span class="noth-lang-track"><span class="noth-lang-knob"></span></span>
-        <span>4K</span>
-      </button>
-
+    <div class="noth-menu-col">
       <button
         type="button"
         id="noth-menu-btn"
         class="noth-menu-trigger"
         aria-label="Toggle Menu"
       >
-        <span class="hidden sm:inline">MENU</span>
-        <svg class="noth-menu-svg" viewBox="0 0 16 16" fill="currentColor">
-          <rect x="1" y="1" width="5" height="5" />
-          <rect x="10" y="1" width="5" height="5" />
-          <rect x="1" y="10" width="5" height="5" />
-          <rect x="10" y="10" width="5" height="5" />
+        <span id="noth-menu-label">MENU</span>
+        <svg class="noth-menu-svg" viewBox="0 0 14 14" fill="currentColor">
+          <rect x="1" y="1" width="4" height="4" />
+          <rect x="9" y="1" width="4" height="4" />
+          <rect x="1" y="9" width="4" height="4" />
+          <rect x="9" y="9" width="4" height="4" />
         </svg>
       </button>
+
+      <nav id="header-vert-nav" class="noth-vert-nav hidden md:flex">
+        <a href="/#works" class="noth-vert-link">WORKS</a>
+        <a href="/movies" class="noth-vert-link">MOVIES</a>
+        <a href="/tv" class="noth-vert-link">SERIES</a>
+        <a href="/anime" class="noth-vert-link">ANIME</a>
+        <a href="/schedule" class="noth-vert-link">SCHEDULE</a>
+      </nav>
     </div>
   </header>
 
   <!-- =========================================================
-       EXPANDABLE NOTH.IN NAVIGATION DRAWER OVERLAY
+       3. FULLSCREEN NAVIGATION DRAWER OVERLAY
        ========================================================= -->
   <div
     id="noth-menu-drawer"
     class="fixed inset-0 z-[950] hidden bg-black text-white flex-col justify-between px-6 py-24 sm:px-12"
   >
     <div class="grid grid-cols-1 gap-10 md:grid-cols-12 pt-8">
-      <div class="md:col-span-4 space-y-3">
+      <div class="md:col-span-4 space-y-4">
         <div class="noth-paren">( Navigation Index )</div>
         <p class="text-sm text-neutral-400 max-w-xs leading-relaxed">
-          Not just a streaming catalog, a curated perspective. Because Nothin' ordinary belongs on your screen.
+          Not a style, a perspective.<br />Because Nonton’ is Everythin’.
         </p>
+        <div class="pt-4">
+          <button
+            type="button"
+            onclick="document.getElementById('noth-menu-btn').click(); window.openNothSearch();"
+            class="noth-pill noth-pill-outline-light"
+          >
+            <span>SEARCH ARCHIVE (CTRL+K)</span>
+            <span class="noth-pill-arrow">→</span>
+          </button>
+        </div>
       </div>
       <div class="md:col-span-8 flex flex-col gap-3">
-        <a href="/" class="text-4xl sm:text-6xl font-bold tracking-tight hover:italic transition-all">01 / Beranda Utama</a>
-        <a href="/movies" class="text-4xl sm:text-6xl font-bold tracking-tight hover:italic transition-all">02 / Film Box Office</a>
-        <a href="/tv" class="text-4xl sm:text-6xl font-bold tracking-tight hover:italic transition-all">03 / Serial TV & K-Drama</a>
-        <a href="/anime" class="text-4xl sm:text-6xl font-bold tracking-tight hover:italic transition-all">04 / Anime Simulcast</a>
-        <a href="/schedule" class="text-4xl sm:text-6xl font-bold tracking-tight hover:italic transition-all">05 / Jadwal Rilis Mingguan</a>
-        <a href="/watchlist" class="text-4xl sm:text-6xl font-bold tracking-tight hover:italic transition-all">06 / Arsip Watchlist</a>
+        <a href="/" class="text-4xl sm:text-6xl font-medium tracking-tight hover:opacity-60 transition-opacity">Index / Home</a>
+        <a href="/movies" class="text-4xl sm:text-6xl font-medium tracking-tight hover:opacity-60 transition-opacity">Box Office Movies</a>
+        <a href="/tv" class="text-4xl sm:text-6xl font-medium tracking-tight hover:opacity-60 transition-opacity">TV Series &amp; K-Drama</a>
+        <a href="/anime" class="text-4xl sm:text-6xl font-medium tracking-tight hover:opacity-60 transition-opacity">Anime Simulcast</a>
+        <a href="/schedule" class="text-4xl sm:text-6xl font-medium tracking-tight hover:opacity-60 transition-opacity">Weekly Release Schedule</a>
+        <a href="/watchlist" class="text-4xl sm:text-6xl font-medium tracking-tight hover:opacity-60 transition-opacity">Personal Watchlist</a>
       </div>
     </div>
 
     <div class="flex flex-wrap items-center justify-between gap-4 border-t border-white/15 pt-6 text-xs font-mono text-neutral-400">
-      <div>N' — PURE RUST STREAMING ENGINE</div>
+      <div>N’ — PURE RUST STREAMING STUDIO</div>
       <button type="button" onclick="window.replayNothSplash()" class="noth-pill noth-pill-outline-light">
         <span>REPLAY SPLASH SCREEN</span>
-        <span class="noth-pill-arrow">↻</span>
+        <span class="noth-pill-arrow">→</span>
       </button>
     </div>
   </div>
 
   <!-- =========================================================
-       MAIN VIEWPORT CONTAINER
+       4. MAIN VIEWPORT CONTENT
        ========================================================= -->
   <main class="w-full min-h-screen">
     {% block content %}{% endblock %}
   </main>
 
   <!-- =========================================================
-       NOTH.IN MONUMENTAL FOOTER (#footer)
+       5. NOTH.IN MONUMENTAL FOOTER
        ========================================================= -->
-  <footer id="footer" class="bg-black text-white border-t border-white/15 pt-20 pb-10 px-5 sm:px-10">
-    <div class="mx-auto max-w-[1600px]">
-      <div class="grid grid-cols-1 gap-12 lg:grid-cols-12 pb-16">
-        <div class="lg:col-span-8 space-y-8">
-          <div class="noth-paren">( Start watching )</div>
-          <h2 class="text-4xl sm:text-6xl lg:text-7xl font-normal tracking-tight leading-[1.05]">
-            Let's start from nothin'
+  <footer id="footer" class="bg-black text-white pt-24 pb-8 px-6 sm:px-8">
+    <div class="w-full">
+      <div class="grid grid-cols-1 gap-12 lg:grid-cols-12 pb-12 items-end">
+        <div class="lg:col-span-8 space-y-10">
+          <h2 class="text-5xl sm:text-7xl font-medium tracking-tight leading-[1.02]">
+            Let’s start<br />from nonton’
           </h2>
-          <div class="flex flex-wrap items-center gap-3 pt-2">
-            <a href="/movies" class="noth-pill noth-pill-outline-light">
+          <div class="flex flex-wrap items-center gap-3.5">
+            <a href="/movies" class="noth-pill noth-pill-outline-light !px-7 !py-4">
               <span>EXPLORE MOVIES</span>
               <span class="noth-pill-arrow">→</span>
             </a>
-            <a href="/anime" class="noth-pill noth-pill-outline-light">
+            <a href="/anime" class="noth-pill noth-pill-outline-light !px-7 !py-4">
               <span>STREAM ANIME</span>
               <span class="noth-pill-arrow">@</span>
             </a>
-            <a href="/schedule" class="noth-pill noth-pill-outline-light">
-              <span>RELEASE SCHEDULE</span>
+            <button
+              type="button"
+              onclick="window.openNothSearch()"
+              class="noth-pill noth-pill-outline-light !px-7 !py-4"
+            >
+              <span>ASK / SEARCH TITLE</span>
               <span class="noth-pill-arrow">→</span>
-            </a>
-            <button type="button" onclick="window.replayNothSplash()" class="noth-pill noth-pill-outline-light">
-              <span>REPLAY INTRO</span>
-              <span class="noth-pill-arrow">↻</span>
             </button>
           </div>
         </div>
 
-        <div class="lg:col-span-4 flex flex-col justify-between lg:items-end text-left lg:text-right space-y-6">
-          <div class="noth-paren">( Architecture )</div>
-          <div class="space-y-1.5 text-sm uppercase tracking-wider font-medium">
-            <div><a href="/movies" class="hover:opacity-60 transition-opacity">BOX OFFICE 4K</a></div>
-            <div><a href="/tv?genre=K-Drama" class="hover:opacity-60 transition-opacity">KOREAN DRAMA</a></div>
-            <div><a href="/anime" class="hover:opacity-60 transition-opacity">ANILIST SIMULCAST</a></div>
-            <div><a href="/watchlist" class="hover:opacity-60 transition-opacity">LOCALSTORAGE VAULT</a></div>
+        <div class="lg:col-span-4 flex flex-col lg:items-end justify-end">
+          <div class="space-y-1 text-2xl sm:text-4xl font-medium tracking-tight text-left lg:text-left">
+            <div><a href="/movies" class="hover:opacity-60 transition-opacity">Movies</a></div>
+            <div><a href="/tv?genre=K-Drama" class="hover:opacity-60 transition-opacity">K-Drama</a></div>
+            <div><a href="/anime" class="hover:opacity-60 transition-opacity">Anime</a></div>
           </div>
         </div>
       </div>
 
-      <!-- Giant Scaling NONTON' SVG Wordmark -->
-      <div class="noth-footer-wordmark" data-footer-wordmark>
-        <span class="noth-footer-letter">N</span>
-        <span class="noth-footer-letter">O</span>
-        <span class="noth-footer-letter">N</span>
-        <span class="noth-footer-letter">T</span>
-        <span class="noth-footer-letter">O</span>
-        <span class="noth-footer-letter">N</span>
-        <span class="noth-footer-letter">'</span>
+      <div class="noth-footer-wordmark-row" data-footer-wordmark>
+        <span class="noth-footer-small-n">N</span>
+        <div class="noth-footer-big-rest">
+          <span class="noth-footer-letter">O</span>
+          <span class="noth-footer-letter">N</span>
+          <span class="noth-footer-letter">T</span>
+          <span class="noth-footer-letter">O</span>
+          <span class="noth-footer-letter">N</span>
+          <span class="noth-footer-letter">’</span>
+        </div>
       </div>
 
-      <!-- Bottom Bar -->
-      <div class="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-white/15 pt-6 text-[11px] font-mono uppercase tracking-widest text-neutral-400">
-        <div>© 2026 N' STUDIO — RUST AXUM + ASKAMA EDITION</div>
-        <div class="flex items-center gap-6">
-          <a href="/" class="hover:text-white transition-colors">INDEX</a>
-          <a href="/movies" class="hover:text-white transition-colors">WORKS</a>
-          <a href="/schedule" class="hover:text-white transition-colors">METHOD</a>
-          <a href="/watchlist" class="hover:text-white transition-colors">ARCHIVE</a>
+      <div class="mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 text-[11px] font-semibold tracking-wider text-white">
+        <div>©2026 — Nonton Creative Streaming Studio — Multi-Server 4K Engine</div>
+        <div class="flex flex-wrap items-center gap-6">
+          <button
+            type="button"
+            onclick="window.replayNothSplash()"
+            class="noth-switch-pill noth-switch-pill-light"
+            title="Replay Splash Screen"
+          >
+            <span class="opacity-45">INTRO</span>
+            <span class="noth-switch-track"><span class="noth-switch-knob"></span></span>
+            <span>REPLAY</span>
+          </button>
+          <a href="/movies" class="uppercase hover:opacity-60">STUDIO</a>
+          <a href="/schedule" class="uppercase hover:opacity-60">SCHEDULE</a>
+          <a href="/watchlist" class="uppercase hover:opacity-60">WATCHLIST</a>
         </div>
       </div>
     </div>
   </footer>
 
   <!-- =========================================================
-       INSTANT COMMAND SEARCH MODAL (CTRL + K) — NOTH.IN EDITION
+       6. INSTANT COMMAND SEARCH MODAL (CTRL + K)
        ========================================================= -->
   <div id="search-modal" class="hidden fixed inset-0 z-[2000] flex items-start justify-center bg-black/90 px-4 pt-20 backdrop-blur-md sm:pt-28">
     <div id="search-modal-backdrop" class="fixed inset-0"></div>
@@ -255,7 +359,7 @@
           class="w-full bg-transparent text-base text-white placeholder-neutral-500 focus:outline-none sm:text-lg"
         />
         <button type="submit" class="noth-pill noth-pill-light !py-2.5 !px-4 !text-[11px] shrink-0">
-          <span>ENTER ↵</span>
+          <span>ENTER</span>
         </button>
         <button id="close-search-btn" type="button" class="font-mono text-xs text-neutral-400 hover:text-white px-2 py-1">
           [ESC]
@@ -263,12 +367,12 @@
       </form>
       <div id="instant-search-results" class="max-h-[65vh] overflow-y-auto p-4 space-y-2">
         <div class="py-10 text-center font-mono text-xs text-neutral-500">
-          ( Type at least 2 characters or press ENTER ↵ for full index search )
+          ( Type at least 2 characters or press ENTER for full index search )
         </div>
       </div>
     </div>
   </div>
 
-  <script src="/static/js/app.js"></script>
+  <script src="/static/js/app.js?v=noth2026_v7"></script>
 </body>
 </html>

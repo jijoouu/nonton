@@ -1,14 +1,12 @@
 /**
- * N' — Nonton Creative Streaming Engine (Inspired by noth.in)
- * - Splash Screen Preloader (000 -> 100 counter + N' 3D Balloon Sculpture + Line-Mask Reveal)
- * - Lenis Smooth Inertial Scroll + Scroll-Driven Wordmark Zoom, Image Parallax & 3D Rotation
- * - Glitch Text-Scramble Manifesto Decoder
- * - Zero-Login LocalStorage (Watchlist, Continue Watching, Watched Episodes, JSON Backup)
- * - Instant Command Search (Ctrl+K)
+ * N' — Nonton Creative Streaming Studio (Exact noth.in Blueprint)
+ * 1. Full Splash Screen Preloader (N + 3D Balloon Dog + ' + 000->100 counter + Notice Card)
+ * 2. Sticky 100vh White Hero with Giant NONTON' Scroll Zoom-Through
+ * 3. Lenis Smooth Inertial Scroll + Asymmetric 6-Column Works Parallax
+ * 4. Glitch Text-Scramble Manifesto + Monumental Footer Letter Scaling
  */
 
 const STORAGE_KEY = "nonton-user-storage-rust";
-const SPLASH_SESSION_KEY = "noth-splash-seen-v1";
 
 const NontonStore = {
   getState() {
@@ -88,6 +86,7 @@ const NontonStore = {
 window.NontonStore = NontonStore;
 
 let lenisInstance = null;
+let splashRafId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   NontonStore.updateNavbarBadge();
@@ -104,9 +103,46 @@ document.addEventListener("DOMContentLoaded", () => {
 /* =========================================================
    1. NOTH.IN SPLASH SCREEN / PRELOADER (000 -> 100)
    ========================================================= */
+const SPLASH_SHOWN_KEY = "noth_splash_shown";
+
+function completeSplashReveal() {
+  const loader = document.getElementById("noth-loader");
+  const counterEl = document.getElementById("noth-loader-number");
+  const cardEl = document.getElementById("noth-splash-card");
+  const htmlEl = document.documentElement;
+
+  if (splashRafId) {
+    cancelAnimationFrame(splashRafId);
+    splashRafId = null;
+  }
+  try {
+    sessionStorage.setItem(SPLASH_SHOWN_KEY, "1");
+  } catch (e) {}
+
+  if (counterEl) counterEl.textContent = "100";
+  if (cardEl) cardEl.classList.add("is-hidden");
+
+  setTimeout(() => {
+    if (loader) loader.classList.add("is-done");
+    htmlEl.classList.remove("lenis-stopped");
+    document.body.classList.add("splash-ready");
+    if (lenisInstance) lenisInstance.start();
+  }, 180);
+}
+
+window.finishNothSplashNow = function () {
+  completeSplashReveal();
+};
+
+window.dismissSplashCard = function () {
+  const cardEl = document.getElementById("noth-splash-card");
+  if (cardEl) cardEl.classList.add("is-hidden");
+};
+
 function initNothSplashLoader(forceFull = false) {
   const loader = document.getElementById("noth-loader");
   const counterEl = document.getElementById("noth-loader-number");
+  const cardEl = document.getElementById("noth-splash-card");
   const htmlEl = document.documentElement;
 
   if (!loader || !counterEl) {
@@ -115,9 +151,29 @@ function initNothSplashLoader(forceFull = false) {
     return;
   }
 
-  const isHomePage = window.location.pathname === "/";
-  const alreadySeen = sessionStorage.getItem(SPLASH_SESSION_KEY) === "1";
-  const duration = forceFull || isHomePage || !alreadySeen ? 1350 : 380;
+  let alreadyShown = false;
+  try {
+    alreadyShown = sessionStorage.getItem(SPLASH_SHOWN_KEY) === "1";
+  } catch (e) {}
+
+  // Only show splash screen on the very first visit to the website (unless manually replayed)
+  if (alreadyShown && !forceFull) {
+    htmlEl.classList.add("splash-seen");
+    htmlEl.classList.remove("lenis-stopped");
+    document.body.classList.add("splash-ready");
+    loader.classList.add("is-done");
+    return;
+  }
+
+  // Mark as shown immediately so navigating away even mid-load won't re-trigger splash
+  try {
+    sessionStorage.setItem(SPLASH_SHOWN_KEY, "1");
+  } catch (e) {}
+
+  htmlEl.classList.remove("splash-seen");
+  if (cardEl) cardEl.classList.remove("is-hidden");
+
+  const duration = 2100;
 
   loader.classList.remove("is-done");
   document.body.classList.remove("splash-ready");
@@ -129,27 +185,22 @@ function initNothSplashLoader(forceFull = false) {
   function tick(now) {
     const elapsed = now - startTime;
     const rawProgress = Math.min(1, elapsed / duration);
-    // Ease out cubic for authentic noth.in counter cadence (000 -> 043 -> 070 -> 100)
-    const eased = 1 - Math.pow(1 - rawProgress, 3);
-    const currentNum = Math.floor(eased * 100);
+    const eased =
+      rawProgress < 0.5
+        ? 4 * rawProgress * rawProgress * rawProgress
+        : 1 - Math.pow(-2 * rawProgress + 2, 3) / 2;
+    const currentNum = Math.min(100, Math.floor(eased * 100));
 
     counterEl.textContent = String(currentNum).padStart(3, "0");
 
     if (rawProgress < 1) {
-      requestAnimationFrame(tick);
+      splashRafId = requestAnimationFrame(tick);
     } else {
-      counterEl.textContent = "100";
-      sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
-      setTimeout(() => {
-        loader.classList.add("is-done");
-        htmlEl.classList.remove("lenis-stopped");
-        document.body.classList.add("splash-ready");
-        if (lenisInstance) lenisInstance.start();
-      }, 140);
+      completeSplashReveal();
     }
   }
 
-  requestAnimationFrame(tick);
+  splashRafId = requestAnimationFrame(tick);
 }
 
 window.replayNothSplash = function () {
@@ -170,7 +221,7 @@ window.replayNothSplash = function () {
 function initLenisAndScrollChoreography() {
   if (typeof window.Lenis !== "undefined") {
     lenisInstance = new window.Lenis({
-      lerp: 0.09,
+      lerp: 0.085,
       smoothWheel: true,
       wheelMultiplier: 1.0,
     });
@@ -182,10 +233,12 @@ function initLenisAndScrollChoreography() {
     requestAnimationFrame(raf);
   }
 
+  const isHomePage = window.location.pathname === "/";
+  const headerLogo = document.getElementById("header-n-logo");
+  const heroTrack = document.getElementById("hero-scroll-track");
   const wordmark = document.getElementById("hero-zoom-wordmark");
   const showreelCard = document.getElementById("hero-showreel-card");
   const parallaxImgs = document.querySelectorAll("[data-parallax-img]");
-  const rotateObjs = document.querySelectorAll("[data-scroll-rotate]");
   const footerWordmark = document.querySelector("[data-footer-wordmark]");
   const footerLetters = footerWordmark
     ? footerWordmark.querySelectorAll(".noth-footer-letter")
@@ -195,40 +248,43 @@ function initLenisAndScrollChoreography() {
     const scrollY = window.scrollY || window.pageYOffset;
     const vh = window.innerHeight || 900;
 
-    // 1. Hero Giant NONTON' Wordmark Zoom-Through on Scroll
-    if (wordmark) {
-      const progress = Math.min(1, Math.max(0, scrollY / (vh * 0.75)));
-      const scale = 1 + progress * 1.45;
-      const translateY = progress * 42;
-      const opacity = Math.max(0.08, 1 - progress * 0.85);
-      wordmark.style.transform = `translate3d(0, ${translateY}px, 0) scale(${scale.toFixed(3)})`;
-      wordmark.style.opacity = opacity.toFixed(3);
+    // 1. Hide top-left N' logo at y=0 on homepage so Hero tagline sits cleanly in top-left (like step_89.png)
+    if (headerLogo) {
+      if (isHomePage && scrollY < vh * 0.45) {
+        headerLogo.style.opacity = "0";
+        headerLogo.style.pointerEvents = "none";
+      } else {
+        headerLogo.style.opacity = "1";
+        headerLogo.style.pointerEvents = "auto";
+      }
     }
 
-    // 2. Showreel Card Subtle Expand on Scroll
+    // 2. Hero Sticky Giant NONTON' Wordmark Zoom-Through (step_89 -> step_6)
+    if (wordmark && heroTrack) {
+      const maxScroll = Math.max(1, heroTrack.offsetHeight - vh);
+      const progress = Math.min(1, Math.max(0, scrollY / maxScroll));
+      // Exponential zoom from scale(1) to scale(5.8) matching step_6_shot_1_hero_desktop_1440.png
+      const scale = 1 + Math.pow(progress, 1.35) * 4.8;
+      wordmark.style.transform = `scale(${scale.toFixed(3)})`;
+    }
+
+    // 3. Showreel Card Subtle Scale-In on Scroll
     if (showreelCard) {
       const rect = showreelCard.getBoundingClientRect();
-      const centerProgress = Math.min(1, Math.max(0, (vh - rect.top) / (vh * 0.85)));
-      const cardScale = 0.94 + centerProgress * 0.06;
+      const centerProgress = Math.min(1, Math.max(0, (vh - rect.top) / (vh * 0.9)));
+      const cardScale = 0.95 + centerProgress * 0.05;
       showreelCard.style.transform = `scale(${cardScale.toFixed(3)})`;
     }
 
-    // 3. Internal Image Parallax inside Asymmetric Cards (.work_list)
+    // 4. Internal Image Parallax inside Asymmetric Works Cards
     parallaxImgs.forEach((img) => {
       const frame = img.parentElement;
       if (!frame) return;
       const rect = frame.getBoundingClientRect();
       if (rect.bottom < 0 || rect.top > vh) return;
       const ratio = (rect.top + rect.height * 0.5 - vh * 0.5) / vh;
-      const shiftY = Math.max(-10, Math.min(10, ratio * -14));
+      const shiftY = Math.max(-9, Math.min(9, ratio * -13));
       img.style.transform = `translate3d(0, ${shiftY.toFixed(2)}%, 0) scale(1.04)`;
-    });
-
-    // 4. Floating 3D Objects Continuous Scroll Rotation
-    rotateObjs.forEach((obj) => {
-      const speed = parseFloat(obj.dataset.scrollRotate || "0.2");
-      const deg = scrollY * speed;
-      obj.style.transform = `rotate(${deg.toFixed(1)}deg)`;
     });
 
     // 5. Giant Footer Letters Independent Scale Reveal
@@ -237,7 +293,7 @@ function initLenisAndScrollChoreography() {
       const visibleRatio = Math.min(1, Math.max(0, (vh - rect.top) / (rect.height + vh * 0.25)));
       footerLetters.forEach((letter, idx) => {
         const stagger = idx * 0.05;
-        const localP = Math.min(1, Math.max(0.15, (visibleRatio - stagger) / (1 - stagger)));
+        const localP = Math.min(1, Math.max(0.2, (visibleRatio - stagger) / (1 - stagger)));
         letter.style.transform = `scaleY(${localP.toFixed(3)})`;
       });
     }
@@ -324,6 +380,14 @@ function initGlitchTextScramble() {
 /* =========================================================
    5. INSTANT COMMAND SEARCH MODAL (CTRL + K)
    ========================================================= */
+window.openNothSearch = function () {
+  const modal = document.getElementById("search-modal");
+  const input = document.getElementById("instant-search-input");
+  if (!modal) return;
+  modal.classList.remove("hidden");
+  setTimeout(() => input && input.focus(), 50);
+};
+
 function initSearchModal() {
   const modal = document.getElementById("search-modal");
   const openBtn = document.getElementById("open-search-btn");
@@ -334,14 +398,8 @@ function initSearchModal() {
 
   if (!modal) return;
 
-  const openModal = () => {
-    modal.classList.remove("hidden");
-    setTimeout(() => input && input.focus(), 50);
-  };
-
-  const closeModal = () => {
-    modal.classList.add("hidden");
-  };
+  const openModal = () => window.openNothSearch();
+  const closeModal = () => modal.classList.add("hidden");
 
   if (openBtn) openBtn.addEventListener("click", openModal);
   if (closeBtn) closeBtn.addEventListener("click", closeModal);
@@ -378,7 +436,7 @@ function initSearchModal() {
           resultsBox.innerHTML =
             `<a href="/search?q=${encodeURIComponent(q)}" class="flex items-center justify-between rounded-full border border-white/30 bg-white text-black px-5 py-3 text-xs font-mono font-bold uppercase hover:bg-neutral-200 transition-colors">
               <span>VIEW FULL INDEX RESULTS FOR "${q}"</span>
-              <span>ENTER ↵</span>
+              <span>ENTER →</span>
             </a>` +
             data.results
               .map(
@@ -389,7 +447,7 @@ function initSearchModal() {
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2 font-mono text-[11px] text-neutral-400">
                       <span class="uppercase text-white">(${item.media_type})</span>
-                      <span>★ ${item.rating}</span>
+                      <span>${item.rating}</span>
                       <span>· ${item.release_year}</span>
                     </div>
                     <h4 class="text-sm font-medium text-white truncate mt-0.5">${item.title}</h4>
@@ -429,9 +487,9 @@ function initHeroCarousel() {
     });
     dots.forEach((d, i) => {
       if (i === idx) {
-        d.className = "h-2 w-8 rounded-full bg-white transition-all";
+        d.className = "h-1.5 w-8 rounded-full bg-white transition-all";
       } else {
-        d.className = "h-2 w-2 rounded-full bg-white/35 hover:bg-white/60 transition-all";
+        d.className = "h-1.5 w-2 rounded-full bg-white/35 hover:bg-white/60 transition-all";
       }
     });
     current = idx;
@@ -485,8 +543,8 @@ function initContinueWatchingRow() {
                 <span>RESUME →</span>
               </div>
             </div>
-            <div class="noth-media-meta">
-              <h4 class="truncate text-sm font-medium text-white group-hover:translate-x-1 transition-transform">${item.title}</h4>
+            <div class="pt-2.5">
+              <h4 class="truncate text-sm font-medium text-white group-hover:opacity-70">${item.title}</h4>
             </div>
           </a>
         `;
@@ -519,7 +577,7 @@ function initWatchlistButtons() {
 
     const updateLabel = () => {
       const saved = NontonStore.isInWatchlist(item.id, item.media_type);
-      btn.textContent = saved ? "✓ IN WATCHLIST" : "+ WATCHLIST";
+      btn.textContent = saved ? "IN WATCHLIST" : "+ WATCHLIST";
     };
 
     updateLabel();
@@ -532,7 +590,7 @@ function initWatchlistButtons() {
 }
 
 window.scrollMediaRow = function (btn, dir) {
-  const section = btn.closest("section");
+  const section = btn.closest("div.space-y-8") || btn.closest("section");
   const track = section ? section.querySelector("[data-row-track]") : null;
   if (!track) return;
   const amount = track.clientWidth * 0.75;
