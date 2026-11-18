@@ -1,62 +1,63 @@
 {% extends "layout.html" %}
 
-{% block title %}Hasil Pencarian "{{ query }}" — Nonton Screening Index{% endblock %}
+{% block title %}Hasil Pencarian "{{ query }}" — Nonton Rust{% endblock %}
 
 {% block content %}
 <div class="space-y-8 pb-14">
-  <!-- Ruled Search Command Panel -->
-  <div class="border border-[#FBF9ED]/20 bg-[#0B1620] p-6">
+  <!-- Search Bar Header -->
+  <div class="rounded-3xl border border-white/10 bg-zinc-900/75 p-6 shadow-xl">
     <form action="/search" method="GET" class="space-y-4">
       <div class="flex flex-col gap-3 sm:flex-row">
         <div class="relative flex-1">
+          <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-rose-500">🔍</span>
           <input
             type="text"
             name="q"
             value="{{ query }}"
             placeholder="Ketik judul Film, Anime, atau K-Drama lalu tekan Enter (contoh: Godzilla, Queen of Tears, Solo Leveling)..."
-            class="w-full border border-[#FBF9ED]/20 bg-[#060D13] py-3.5 px-4 text-sm font-medium text-[#FBF9ED] placeholder-[#FBF9ED]/45 focus:border-[#009AD0] focus:outline-none sm:text-base"
+            class="w-full rounded-2xl border border-white/15 bg-zinc-950 py-3.5 pl-11 pr-4 text-sm font-medium text-white placeholder-zinc-500 focus:border-rose-500 focus:outline-none sm:text-base"
           />
           <input type="hidden" name="type" value="{{ active_type }}" />
         </div>
         <button
           type="submit"
-          class="btn-pantone-primary px-7 py-3.5 font-mono text-xs font-bold uppercase tracking-wider"
+          class="rounded-2xl bg-rose-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-rose-600/25 transition-transform hover:scale-[1.02] hover:bg-rose-500"
         >
-          CARI INDEKS (ENTER)
+          Cari Sekarang ↵
         </button>
       </div>
 
       <!-- Category Filter Tabs -->
-      <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#FBF9ED]/12">
-        <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+        <div class="flex flex-wrap items-center gap-2">
           <a
             href="/search?q={{ query }}&type=all"
-            class="border px-3.5 py-1.5 font-bold uppercase transition-all {% if active_type == "all" %}border-[#BE432C] bg-[#BE432C] text-[#FBF9ED]{% else %}border-[#FBF9ED]/15 bg-[#060D13] text-[#FBF9ED] hover:border-[#009AD0]{% endif %}"
+            class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all {% if active_type == "all" %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-950 text-zinc-400 hover:text-white{% endif %}"
           >
-            SEMUA ({{ total_count }})
+            Semua ({{ total_count }})
           </a>
           <a
             href="/search?q={{ query }}&type=movie"
-            class="border px-3.5 py-1.5 font-bold uppercase transition-all {% if active_type == "movie" %}border-[#009AD0] bg-[#009AD0] text-[#060D13]{% else %}border-[#FBF9ED]/15 bg-[#060D13] text-[#FBF9ED] hover:border-[#009AD0]{% endif %}"
+            class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all {% if active_type == "movie" %}border-indigo-500 bg-indigo-600 text-white{% else %}border-white/10 bg-zinc-950 text-zinc-400 hover:text-white{% endif %}"
           >
-            FILM (MOVIES)
+            🎬 Film (Movies)
           </a>
           <a
             href="/search?q={{ query }}&type=tv"
-            class="border px-3.5 py-1.5 font-bold uppercase transition-all {% if active_type == "tv" %}border-[#009AD0] bg-[#009AD0] text-[#060D13]{% else %}border-[#FBF9ED]/15 bg-[#060D13] text-[#FBF9ED] hover:border-[#009AD0]{% endif %}"
+            class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all {% if active_type == "tv" %}border-emerald-500 bg-emerald-600 text-white{% else %}border-white/10 bg-zinc-950 text-zinc-400 hover:text-white{% endif %}"
           >
-            SERIAL TV & K-DRAMA
+            📺 Serial TV & K-Drama
           </a>
           <a
             href="/search?q={{ query }}&type=anime"
-            class="border px-3.5 py-1.5 font-bold uppercase transition-all {% if active_type == "anime" %}border-[#BE432C] bg-[#BE432C] text-[#FBF9ED]{% else %}border-[#FBF9ED]/15 bg-[#060D13] text-[#FBF9ED] hover:border-[#009AD0]{% endif %}"
+            class="rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all {% if active_type == "anime" %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-950 text-zinc-400 hover:text-white{% endif %}"
           >
-            ANIME
+            ✨ Anime
           </a>
         </div>
 
-        <span class="font-mono text-xs text-[#009AD0]">
-          DITEMUKAN <strong>{{ items.len() }}</strong> HASIL UNTUK <strong>"{{ query }}"</strong>
+        <span class="font-mono text-xs text-zinc-400">
+          Menampilkan <strong>{{ items.len() }}</strong> hasil untuk <strong class="text-white">"{{ query }}"</strong>
         </span>
       </div>
     </form>
@@ -64,28 +65,31 @@
 
   <!-- Results Grid -->
   {% if items.is_empty() %}
-  <div class="border border-[#FBF9ED]/15 bg-[#0B1620] py-20 text-center px-4">
-    <h2 class="font-display text-lg font-bold text-[#FBF9ED]">Tidak Ditemukan Hasil untuk "{{ query }}"</h2>
-    <p class="mt-1 text-xs text-[#FBF9ED]/70">Gunakan kata kunci judul bahasa Inggris atau Jepang (contoh: Godzilla, Dune, Squid Game, One Piece).</p>
+  <div class="rounded-3xl border border-white/10 bg-zinc-900/40 py-20 text-center px-4">
+    <p class="text-base font-bold text-white">Tidak ditemukan hasil untuk "{{ query }}"</p>
+    <p class="mt-1 text-xs text-zinc-400">Coba gunakan kata kunci judul bahasa Inggris atau Jepang (contoh: Godzilla, Dune, Squid Game, One Piece).</p>
   </div>
   {% else %}
-  <div class="program-shelf grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+  <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
     {% for item in items %}
-    <div class="poster-card group flex flex-col">
-      <div class="flex items-center justify-between border-b border-[#FBF9ED]/15 bg-[#060D13] px-2.5 py-1.5 font-mono text-[10px]">
-        <span class="font-bold text-[#009AD0]">{{ item.badge_label() }}</span>
-        <span class="text-[#FBF9ED]">★ {{ item.rating }}</span>
-      </div>
-      <a href="{{ item.detail_href() }}" class="relative aspect-[2/3] w-full overflow-hidden bg-[#060D13] block">
-        <img src="{{ item.poster_url }}" alt="{{ item.title }}" onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600'" loading="lazy" class="poster-img h-full w-full object-cover" />
-      </a>
-      <div class="p-2.5 border-t border-[#FBF9ED]/12 bg-[#0B1620]">
-        <a href="{{ item.detail_href() }}" class="block truncate text-xs font-bold text-[#FBF9ED] group-hover:text-[#009AD0]">{{ item.title }}</a>
-        <div class="mt-1 flex items-center justify-between font-mono text-[10px] text-[#FBF9ED]/70">
-          <span>{{ item.release_year }}</span>
-          <a href="{{ item.watch_href() }}" class="font-bold text-[#BE432C] hover:underline">PUTAR →</a>
+    <div class="flex flex-col">
+      <div class="poster-card group relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-900">
+        <a href="{{ item.detail_href() }}" class="block h-full w-full">
+          <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="poster-img h-full w-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent"></div>
+        </a>
+        <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
+          <span class="rounded bg-zinc-950/85 border border-white/15 px-2 py-0.5 font-mono text-[10px] font-bold text-white">{{ item.badge_label() }}</span>
+          <span class="rounded bg-zinc-950/85 border border-white/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-amber-400">★ {{ item.rating }}</span>
+        </div>
+        <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between">
+          <a href="{{ item.watch_href() }}" class="w-full rounded-lg bg-rose-600/95 py-1.5 text-center text-xs font-bold text-white shadow-lg opacity-0 transition-opacity group-hover:opacity-100 hover:bg-rose-500">
+            ▶ Tonton Sekarang
+          </a>
         </div>
       </div>
+      <a href="{{ item.detail_href() }}" class="mt-2 truncate text-sm font-bold text-white hover:text-rose-400">{{ item.title }}</a>
+      <span class="text-xs text-zinc-400">{{ item.release_year }}</span>
     </div>
     {% endfor %}
   </div>

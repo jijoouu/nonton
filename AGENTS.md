@@ -16,8 +16,7 @@ Seluruh aplikasi dibangun menggunakan ekosistem **Rust** agar menghasilkan 1 fil
 - **Middleware:** `tower-http` (`ServeDir` untuk file statis + `CompressionLayer` Brotli & Gzip otomatis)
 - **Frontend Styling & Motion:**
   - Tailwind CSS + Custom Stylesheet (`static/css/cinema.css`)
-  - **Design System:** Criterion Film Festival Program & 1px Ruled Index dengan Palet Resmi **Pantone P 1-9 C (`#FBF9ED`)**, **Pantone P 112-14 C (`#009AD0`)**, dan **Pantone P 40-16 C (`#BE432C`)** di atas latar Abyssal (`#060D13`).
-  - **Flight Scroll Choreography (`static/js/app.js`):** Inertial lerp scroll engine yang terinspirasi dari `https://i-type-ny.groznov.co/flight/`.
+  - **Design System:** Obsidian Cinema Edition (Latar Gelap Pekat `#0A0D14` / `#05070A` dengan aksen Merah Bioskop `#E50914`, Glassmorphism, dan Tipografi Modern).
 - **State & Local Persistence:** Zero-Login `localStorage` Engine (`window.NontonStore` di `static/js/app.js`) untuk mengelola *Watchlist*, *Continue Watching History*, *Watched Episodes*, *Recent Searches*, dan *Export/Import JSON Backup*.
 
 ---
@@ -28,6 +27,7 @@ Seluruh aplikasi dibangun menggunakan ekosistem **Rust** agar menghasilkan 1 fil
 d:\jijo\Project\nonton\
 ├── Cargo.toml                          # Konfigurasi dependensi Rust & optimasi ukuran binary release
 ├── .env.example                        # Contoh konfigurasi PORT (default 8080) & TMDB_API_KEY
+├── .gitignore                          # Git ignore untuk /target/ dan file environment
 ├── PRD.md                              # Product Requirements Document
 ├── AGENTS.md                           # Blueprint teknis untuk AI Agent (file ini)
 ├── src/
@@ -36,8 +36,8 @@ d:\jijo\Project\nonton\
 │   ├── api.rs                          # Fetcher paralel untuk AniList GraphQL & TMDB/1Shows Search/Catalog
 │   └── providers.rs                    # Multi-Server streaming URL builders (VidFast, VidLink, Vidy, VidZee, VidSrc)
 ├── templates/
-│   ├── layout.html                     # Master Layout (1px Ruled Header, Pantone Strip, Search Modal Ctrl+K, Mobile Nav)
-│   ├── home.html                       # Beranda (Split-Grid Hero Flight Stage, Continue Watching, Program Shelves)
+│   ├── layout.html                     # Master Layout (Header Cinema, Search Modal Ctrl+K, Mobile Nav)
+│   ├── home.html                       # Beranda (Hero Banner, Continue Watching, Shelves/Carousels)
 │   ├── search.html                     # Halaman Hasil Pencarian Penuh (`/search?q=...`) dengan filter kategori
 │   ├── catalog.html                    # Halaman Katalog & Filter Genre (`/movies`, `/tv`, `/anime`, `K-Drama`)
 │   ├── schedule.html                   # Halaman Jadwal Rilis Mingguan Anime (`/schedule` Senin–Minggu)
@@ -46,11 +46,9 @@ d:\jijo\Project\nonton\
 │   └── watch.html                      # Halaman Streaming Multi-Server (`/watch/...` + Theater & Lampu Mati)
 ├── static/
 │   ├── css/
-│   │   └── cinema.css                  # Token warna Pantone, 1px Ruled Grid, & Flight Parallax CSS
+│   │   └── cinema.css                  # Custom Stylesheet Obsidian Cinema
 │   └── js/
-│       └── app.js                      # Flight Inertial Scroll Engine, Search Modal Ctrl+K, & NontonStore LocalStorage
-└── backups/
-    └── v1-obsidian-cinema/             # Arsip backup desain v1 (Obsidian Hitam-Merah)
+│       └── app.js                      # Search Modal Ctrl+K & NontonStore LocalStorage
 ```
 
 ---

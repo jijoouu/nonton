@@ -1,44 +1,45 @@
 {% extends "layout.html" %}
 
-{% block title %}Jadwal Rilis Mingguan Anime — Nonton Screening Index{% endblock %}
+{% block title %}Jadwal Rilis Mingguan Anime — Nonton Rust{% endblock %}
 
 {% block content %}
 <div class="space-y-8 pb-12">
-  <div class="space-y-1.5 border-b border-[#FBF9ED]/15 pb-6">
-    <h1 class="font-display text-3xl font-extrabold tracking-tight text-[#FBF9ED]">Jadwal Rilis Mingguan Anime</h1>
-    <p class="text-sm text-[#FBF9ED]/75 max-w-[65ch]">Tabel waktu penayangan simulcast episode terbaru anime ongoing sesuai zona waktu lokal WIB.</p>
+  <div class="space-y-1.5 border-b border-white/10 pb-6">
+    <span class="font-mono text-xs uppercase tracking-widest text-rose-400">Simulcast Airing Calendar</span>
+    <h1 class="text-3xl font-extrabold tracking-tight text-white">Jadwal Rilis Mingguan Anime</h1>
+    <p class="text-sm text-zinc-400">Pantau jam tayang episode terbaru anime ongoing sesuai hari rilisnya.</p>
   </div>
 
-  <!-- 1px Ruled Day Filter Tabs -->
-  <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 border border-[#FBF9ED]/20 bg-[#0B1620] divide-x divide-y md:divide-y-0 divide-[#FBF9ED]/15">
-    <a href="/schedule?day=1" class="p-3.5 text-center font-mono text-xs font-bold uppercase transition-all {% if active_day == 1 %}bg-[#BE432C] text-[#FBF9ED]{% else %}text-[#FBF9ED] hover:bg-[#0F1E2B] hover:text-[#009AD0]{% endif %}">SENIN</a>
-    <a href="/schedule?day=2" class="p-3.5 text-center font-mono text-xs font-bold uppercase transition-all {% if active_day == 2 %}bg-[#BE432C] text-[#FBF9ED]{% else %}text-[#FBF9ED] hover:bg-[#0F1E2B] hover:text-[#009AD0]{% endif %}">SELASA</a>
-    <a href="/schedule?day=3" class="p-3.5 text-center font-mono text-xs font-bold uppercase transition-all {% if active_day == 3 %}bg-[#BE432C] text-[#FBF9ED]{% else %}text-[#FBF9ED] hover:bg-[#0F1E2B] hover:text-[#009AD0]{% endif %}">RABU</a>
-    <a href="/schedule?day=4" class="p-3.5 text-center font-mono text-xs font-bold uppercase transition-all {% if active_day == 4 %}bg-[#BE432C] text-[#FBF9ED]{% else %}text-[#FBF9ED] hover:bg-[#0F1E2B] hover:text-[#009AD0]{% endif %}">KAMIS</a>
-    <a href="/schedule?day=5" class="p-3.5 text-center font-mono text-xs font-bold uppercase transition-all {% if active_day == 5 %}bg-[#BE432C] text-[#FBF9ED]{% else %}text-[#FBF9ED] hover:bg-[#0F1E2B] hover:text-[#009AD0]{% endif %}">JUMAT</a>
-    <a href="/schedule?day=6" class="p-3.5 text-center font-mono text-xs font-bold uppercase transition-all {% if active_day == 6 %}bg-[#BE432C] text-[#FBF9ED]{% else %}text-[#FBF9ED] hover:bg-[#0F1E2B] hover:text-[#009AD0]{% endif %}">SABTU</a>
-    <a href="/schedule?day=0" class="p-3.5 text-center font-mono text-xs font-bold uppercase transition-all {% if active_day == 0 %}bg-[#BE432C] text-[#FBF9ED]{% else %}text-[#FBF9ED] hover:bg-[#0F1E2B] hover:text-[#009AD0]{% endif %}">MINGGU</a>
+  <!-- Day Filter Tabs -->
+  <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-7">
+    <a href="/schedule?day=1" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 1 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Senin</a>
+    <a href="/schedule?day=2" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 2 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Selasa</a>
+    <a href="/schedule?day=3" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 3 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Rabu</a>
+    <a href="/schedule?day=4" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 4 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Kamis</a>
+    <a href="/schedule?day=5" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 5 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Jumat</a>
+    <a href="/schedule?day=6" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 6 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Sabtu</a>
+    <a href="/schedule?day=0" class="rounded-2xl border p-3 text-center text-xs font-bold transition-all {% if active_day == 0 %}border-rose-500 bg-rose-600 text-white{% else %}border-white/10 bg-zinc-900/75 text-zinc-300 hover:bg-zinc-900{% endif %}">Minggu</a>
   </div>
 
-  <!-- Ruled Timetable Schedule Cards -->
+  <!-- Schedule Cards -->
   <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
     {% for item in schedules %}
-    <div class="poster-card flex gap-4 p-3.5">
-      <a href="{{ item.media.detail_href() }}" class="h-32 w-24 shrink-0 overflow-hidden bg-[#060D13] border border-[#FBF9ED]/15">
-        <img src="{{ item.media.poster_url }}" alt="{{ item.media.title }}" onerror="this.src='https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600'" class="poster-img h-full w-full object-cover" />
+    <div class="poster-card flex gap-4 rounded-2xl border border-white/10 bg-zinc-900/75 p-3.5">
+      <a href="{{ item.media.detail_href() }}" class="h-32 w-24 shrink-0 overflow-hidden rounded-xl bg-zinc-800 border border-white/10">
+        <img src="{{ item.media.poster_url }}" alt="{{ item.media.title }}" class="poster-img h-full w-full object-cover" />
       </a>
       <div class="flex min-w-0 flex-1 flex-col justify-between">
         <div>
-          <div class="flex items-center justify-between gap-2 font-mono text-xs">
-            <span class="bg-[#BE432C] px-2 py-0.5 font-bold text-[#FBF9ED]">EP {{ item.episode }}</span>
-            <span class="font-bold text-[#009AD0]">{{ item.time_wib }}</span>
+          <div class="flex items-center justify-between gap-2">
+            <span class="rounded bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 font-mono text-[11px] font-bold text-rose-300">Ep {{ item.episode }}</span>
+            <span class="font-mono text-xs font-bold text-zinc-300">{{ item.time_wib }}</span>
           </div>
-          <a href="{{ item.media.detail_href() }}" class="mt-2 block truncate text-sm font-bold text-[#FBF9ED] hover:text-[#009AD0]">{{ item.media.title }}</a>
-          <p class="mt-0.5 font-mono text-xs text-[#FBF9ED]/75">SCORE {{ item.media.rating }}</p>
+          <a href="{{ item.media.detail_href() }}" class="mt-1.5 block truncate text-sm font-bold text-white hover:text-rose-400">{{ item.media.title }}</a>
+          <p class="mt-0.5 text-xs text-amber-400 font-mono">★ {{ item.media.rating }}</p>
         </div>
-        <div class="flex items-center justify-between border-t border-[#FBF9ED]/12 pt-2.5 font-mono text-xs">
-          <span class="text-[#009AD0]">{{ item.countdown_label }}</span>
-          <a href="{{ item.media.watch_href() }}" class="bg-[#BE432C] px-3 py-1 font-bold text-[#FBF9ED] hover:opacity-90">PUTAR →</a>
+        <div class="flex items-center justify-between border-t border-white/5 pt-2">
+          <span class="font-mono text-[11px] text-emerald-400">⏱ {{ item.countdown_label }}</span>
+          <a href="{{ item.media.watch_href() }}" class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-500">▶ Tonton</a>
         </div>
       </div>
     </div>
